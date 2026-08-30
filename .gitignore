@@ -9,3 +9,7 @@ dist/
 # 排除作業系統或編輯器產生的暫存檔
 .DS_Store
 .vscode/
+
+# 暫緩與舊檔案
+DOSMTH/
+old/
