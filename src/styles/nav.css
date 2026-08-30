@@ -1,0 +1,286 @@
+/*
+    --- nav.css ---
+    此 CSS 檔案專門為導覽列（Navigation Menu）及其相關元件定義樣式。
+    - 包含漢堡選單按鈕、側邊導覽列、遮罩層和多層次下拉選單的樣式和動畫。
+*/
+
+/* --- 1. 導覽列核心樣式 (Navigation Menu & Related Components) --- */
+
+/* 當菜單開啟時，防止網頁主體內容滾動。 */
+body.menu-active {
+    overflow: hidden; /* 隱藏 body 的滾動條。 */
+}
+
+/* #menu-toggle：漢堡選單按鈕的樣式。 */
+#menu-toggle {
+    color: #fff; /* 圖示顏色 */
+    font-size: 25px; /* 圖示大小 */
+    position: fixed; /* 固定在視窗上 */
+    top: 25px;
+    left: 25px;
+    z-index: 1001;
+    width: 50px;
+    height: 50px;
+    border-radius: 45%; /* 圓形玻璃 */
+    background: rgba(255,255,255,0.13); /* 明顯透明度，確保玻璃模糊在 iOS Safari 可見 */
+    border: 0.01px solid rgba(255, 255, 255, 0.296); /* 0.1px 膽外框 */
+    /* 柔和陰影，模擬玻璃厚度與折射 */
+    box-shadow:
+        0 5px 8px 0 rgba(31,38,135,0.08), /* 下方柔和陰影 */
+        0 20px 32px 0 rgba(31,38,135,0.10), /* 整體立體感 */
+        0 0 16px 10px rgba(255,255,255,0.07) inset; /* 內部高光*/
+    /* 變形效果：使用 filter: blur() 與 backdrop-filter: contrast()、saturate()、brightness() 增強內部畫面變形感 */
+    backdrop-filter: blur(5px) contrast(1.5) brightness(1.5) saturate(1.12);
+    -webkit-backdrop-filter: blur(5px) contrast(1.5) brightness(1.5) saturate(1.12);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    outline: 0;
+    transition: transform 0.25s cubic-bezier(.4,2,.6,1), box-shadow 0.3s, background 0.3s;
+    overflow: visible;
+    justify-content: center;
+}
+
+/* SVG 濾鏡：液態玻璃內部變形效果 */
+#menu-glass-distort {
+    filter: url(#menu-glass-distort);
+}
+
+/* #menu-toggle::before, #menu-toggle::after：增加高光效果。 */
+#menu-toggle::before,
+#menu-toggle::after {
+    display: none !important;
+}
+
+/* #menu-toggle:hover：滑鼠懸停時的陰影與縮放效果。 */
+#menu-toggle:hover {
+    /* 懸停時加強立體感與放大 */
+    box-shadow:
+        0 4px 16px 0 rgba(31,38,135,0.10),
+        0 16px 48px 0 rgba(31,38,135,0.13),
+        0 0 24px 4px rgba(255,255,255,0.10) inset;
+    transform: scale(1.08); /* 輕微放大 */
+    background: radial-gradient(ellipse at 60% 35%, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.06) 40%, rgba(255,255,255,0.02) 100%);
+}
+
+/* #menu-icon：選單圖示的樣式。 */
+#menu-icon {
+    transition: transform 0.3s ease; /* 增加圖示旋轉的平滑動畫。 */
+}
+
+/* body.menu-active #menu-icon：當菜單開啟時，圖示旋轉 180 度。 */
+body.menu-active #menu-icon {
+    transform: rotate(270deg);
+}
+
+/* #main-nav：側邊導覽列的樣式。 */
+#main-nav {
+    position: fixed; /* 固定在視窗上。 */
+    top: 0; /* 距離視窗頂部 0。 */
+    left: 0; /* 距離視窗左側 0。 */
+    width: 250px; /* 設定導覽列寬度。 */
+    height: 100vh; /* 高度為視窗高度。 */
+    background: radial-gradient(ellipse at 60% 35%, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.01) 100%);
+    border-right: 0.5px solid rgba(255,255,255,0.18); /* 玻璃質感邊框 */
+    box-shadow:
+        0 10px 40px 0 rgba(31,38,135,0.10), /* 立體感陰影 */
+        0 1.5px 8px 0 rgba(255,255,255,0.08) inset; /* 內部高光 */
+    backdrop-filter: blur(5px) contrast(1.25) brightness(1.12) saturate(1.18); /* 玻璃質感 */
+    -webkit-backdrop-filter: blur(8px) contrast(1.25) brightness(1.12) saturate(1.18);
+    z-index: 1000; /* 確保導覽列在內容上方，但在按鈕下方。 */
+    transform: translateX(-100%); /* 預設將導覽列移出視窗左側（隱藏）。 */
+    transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1); /* 增加滑入/滑出的平滑動畫，使用自訂的 timing function 讓動畫更流暢。 */
+    padding: 80px 20px 20px; /* 內部邊距，為選單按鈕留出空間。 */
+}
+
+/* body.menu-active #main-nav：當菜單開啟時，將導覽列滑入視窗。 */
+body.menu-active #main-nav {
+    transform: translateX(0);
+}
+
+/* #main-nav ul：移除列表的預設樣式。 */
+#main-nav ul {
+    list-style: none;
+}
+
+/* #main-nav ul li：列表項目的間距。 */
+#main-nav ul li {
+    margin-bottom: 20px;
+}
+
+/* #main-nav a：導覽列連結的樣式。 */
+#main-nav a {
+    font-family: "Chiron GoRound TC WS", 'Noto Sans TC', sans-serif;
+    color: #FFFFFF; /* 文字顏色。 */
+    text-decoration: none; /* 移除文字底線。 */
+    font-size: 24px; /* 字體大小。 */
+    text-align:center;
+    padding: 10px 15px; /* 內部邊距。 */
+    display: block; /* 讓連結佔滿整個寬度，方便點擊。 */
+    border-radius: 23px; /* 更圓潤的玻璃角。 */
+    background: radial-gradient(ellipse at 60% 35%, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0.07) 40%, rgba(255,255,255,0.03) 100%);
+    border: 0.5px solid rgba(255,255,255,0.18); /* 玻璃質感細邊框 */
+    box-shadow:
+        0 2px 8px 0 rgba(31,38,135,0.08), /* 下方柔和陰影 */
+        0 0.5px 4px 0 rgba(255,255,255,0.10) inset; /* 內部高光 */
+    backdrop-filter: blur(50px) contrast(1.18) brightness(1.10) saturate(1.10); /* 玻璃質感 */
+    -webkit-backdrop-filter: blur(50px) contrast(1.18) brightness(1.10) saturate(1.10);
+    transition: background 0.3s, box-shadow 0.3s, border 0.3s;
+    white-space: nowrap; /* 防止文字換行。 */
+    overflow: hidden; /* 隱藏超出容器的文字。 */
+    text-overflow: ellipsis; /* 當文字超出容器時顯示省略號。 */
+}
+
+/* #main-nav a:hover：滑鼠懸停時的背景色。 */
+#main-nav a:hover {
+    background: radial-gradient(ellipse at 60% 35%, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.10) 40%, rgba(255,255,255,0.05) 100%);
+    box-shadow:
+        0 4px 16px 0 rgba(31,38,135,0.13),
+        0 0 12px 2px rgba(255,255,255,0.13) inset;
+    border: 0.5px solid rgba(255,255,255,0.25);
+    transform: scale(1.02); /* 輕微放大 */
+}
+
+/* #menu-overlay：半透明遮罩層的樣式。 */
+#menu-overlay {
+    position: fixed; /* 固定在視窗上。 */
+    top: 0;
+    left: 0;
+    width: 100%; /* 寬度填滿視窗。 */
+    height: 100%; /* 高度填滿視窗。 */
+    background-color: rgba(0, 0, 0, 0.6); /* 半透明的黑色背景。 */
+    z-index: 999; /* 在導覽列和按鈕之間。 */
+    opacity: 0; /* 預設透明，不可見。 */
+    pointer-events: none; /* 預設不接收滑鼠事件，讓使用者可以點擊下方的內容。 */
+    transition: opacity 0.5s ease; /* 增加透明度轉換的平滑動畫。 */
+}
+
+/* body.menu-active #menu-overlay：當菜單開啟時，讓遮罩層顯示並接收滑鼠事件。 */
+body.menu-active #menu-overlay {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* --- 2. 層級式子菜單樣式 (Tiered Submenu Styles) --- */
+
+/* .menu-item-has-children > a：擁有子選單的連結樣式。 */
+.menu-item-has-children > a {
+    position: relative; /* 相對定位，以便子元素可以絕對定位。 */
+}
+
+/* .dropdown-icon：下拉箭頭圖示的樣式。 */
+.dropdown-icon {
+    position: absolute; /* 絕對定位在連結內部。 */
+    right: 15px; /* 距離右側 15px。 */
+    top: 50%; /* 垂直置中。 */
+    transform: translateY(-50%); /* 修正垂直置中時的偏移。 */
+    font-size: 16px; /* 字體大小。 */
+    transition: transform 0.3s ease; /* 增加旋轉動畫。 */
+}
+
+/* .submenu：子選單容器的樣式。 */
+.submenu {
+    list-style: none; /* 移除列表符號。 */
+    display: none; /* 預設隱藏子選單。 */
+    padding-left: 20px; /* 增加縮排。 */
+    margin-top: 10px; /* 上方留出空間。 */
+}
+
+/* .submenu a：子選單連結的樣式。 */
+.submenu a {
+    font-size: 20px; /* 字體大小比主選單小。 */
+    color: #cccccc; /* 文字顏色比主選單淺。 */
+    padding-top: 8px; /* 內部邊距。 */
+    padding-bottom: 8px;
+}
+
+/* .submenu a:hover：滑鼠懸停時的文字顏色。 */
+.submenu a:hover {
+    color: #FFFFFF;
+}
+
+/* .menu-item-has-children.is-open > .submenu：當項目被「開啟」時，顯示子選單。 */
+.menu-item-has-children.is-open > .submenu {
+    display: block; /* 讓子選單顯示出來。 */
+}
+
+/* .menu-item-has-children.is-open > a > .dropdown-icon：當項目開啟時，讓箭頭圖示旋轉。 */
+.menu-item-has-children.is-open > a > .dropdown-icon {
+    transform: translateY(-50%) rotate(180deg); /* 旋轉 180 度，表示選單已展開。 */
+}
+
+/* .submenu .submenu：巢狀子選單的縮排。 */
+.submenu .submenu {
+    padding-left: 25px; /* 進一步增加縮排，以區分層級。 */
+}
+
+/* --- 3. 桌面版膠囊選單 (Apple AirPods Pro Style Glassmorphism) --- */
+.desktop-nav-container {
+    position: fixed;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    z-index: 1001;
+    pointer-events: none; /* 讓容器不阻擋點擊，只讓膠囊本身接收點擊 */
+}
+
+.desktop-nav-capsule {
+    background: rgba(30, 30, 32, 0.25);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 40px;
+    padding: 10px 40px;
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s;
+    overflow: hidden;
+    position: relative;
+}
+
+.desktop-nav-links {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px;
+    margin: 0;
+    padding: 0;
+}
+
+.desktop-nav-links li a {
+    color: #e5e5e5;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Chiron GoRound TC WS', 'Noto Sans TC', sans-serif;
+    transition: color 0.3s, transform 0.3s;
+    padding: 5px 0;
+    display: block;
+}
+
+.desktop-nav-links li a:hover {
+    color: #4a90e2;
+    transform: translateY(-1px);
+}
+
+.desktop-nav-links li a.is-current {
+    color: #4a90e2;
+}
+
+/* 響應式顯示切換 */
+@media (min-width: 901px) {
+    .mobile-only {
+        display: none !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .desktop-nav-container {
+        display: none !important;
+    }
+}

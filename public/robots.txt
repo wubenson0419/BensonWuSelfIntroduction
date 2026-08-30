@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /DOSMTH/
+Disallow: /*.md$
+Allow: /
+# 讓 Google 爬蟲直接找到你的網站地圖
+# Sitemap: https://bensonwu.github.io/sitemap.xml

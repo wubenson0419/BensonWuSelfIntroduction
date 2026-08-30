@@ -1,0 +1,45 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { SITE_DATA } from "../data/siteData";
+import TimelineItem from "../components/TimelineItem.astro";
+
+const { profile, experiences } = SITE_DATA;
+---
+
+<Layout title={`About Me - ${profile.nickname}`}>
+    <main class="page-content-wrapper">
+        <!-- Bio Section -->
+        <section class="bio-section">
+            <h1
+                class="page-title"
+                data-scroll="fade-up"
+                style="font-size: 3rem; margin-bottom: 20px; font-weight: 800;"
+            >
+                About <span class="accent-text">Benson</span>
+            </h1>
+            <div class="bio-content bento-card" data-scroll="fade-up">
+                <p class="bio-text">{profile.bio}</p>
+            </div>
+        </section>
+
+        <!-- Experiences Timeline -->
+        <section class="experience-section">
+            <h2 class="section-heading text-center" data-scroll="fade-up">
+                Experiences & Activities
+            </h2>
+            <div class="timeline-container">
+                {
+                    experiences.map((exp) => (
+                        <TimelineItem
+                            year={exp.year}
+                            title={exp.title}
+                            description={exp.description}
+                            image={exp.image}
+                        />
+                    ))
+                }
+            </div>
+        </section>
+    </main>
+</Layout>
+

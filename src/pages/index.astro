@@ -1,0 +1,151 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { SITE_DATA } from "../data/siteData";
+import GalleryItem from "../components/GalleryItem.astro";
+import { Image } from "astro:assets";
+
+const { profile, interests, socialLinks, gallery } = SITE_DATA;
+const featuredGallery = gallery.slice(0, 12);
+---
+
+<Layout title={`${profile.name} - ${profile.nickname} | Personal Website`}>
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                Hello, I'm <br /><span
+                    class="accent-text"
+                    data-profile="nickname">{profile.nickname}</span>
+            </h1>
+            <p class="hero-subtitle" set:html={profile.heroSubtitle} />
+        </div>
+        <div class="hero-image-container">
+            <div class="hero-image-mask">
+                <!-- <img
+                    src={profile.avatarSrc}
+                    alt={profile.name}
+                    class="hero-image"
+                    fetchpriority="high"
+                /> -->
+                <Image
+                src={profile.avatarSrc}
+                alt={profile.name}
+                class="hero-image"
+                width={400}
+                height={400}
+                loading="eager"
+                />
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Bento Box Section -->
+        <section id="about" class="bento-section">
+            <h2 class="section-heading"><a href="/aboutme">About Me</a></h2>
+            <div class="bento-grid">
+                <div
+                    class="bento-card bento-intro"
+                    data-scroll="fade-up"
+                    style="text-align: center; align-items: center;"
+                >
+                    <h3><a href="/aboutme">Profile</a></h3>
+                    <h4><span>{profile.name}</span></h4>
+                    <p>
+                        <!-- <strong>Birthday:</strong>
+                        <span>{profile.birthday}</span> -->
+                        <strong>Role:</strong>
+                        <span>{profile.role}</span>
+                    </p>
+                    <p>
+                        <strong>Nickname:</strong>
+                        <span>{profile.nickname}</span>
+                    </p>
+
+                </div>
+
+                <div class="bento-card bento-edu" data-scroll="fade-up">
+                    <h3><a href="/aboutme">Education</a></h3>
+                    <p>{profile.school}</p>
+                    <p>{profile.major}</p>
+                    <p class="status">{profile.status}</p>
+                </div>
+
+                <div class="bento-card bento-hobbies" data-scroll="fade-up">
+                    <h3><a href="/aboutme">Interests</a></h3>
+                    <div class="tags">
+                        {
+                            interests.map((interest) => (
+                                <span class="tag">{interest}</span>
+                            ))
+                        }
+                    </div>
+                </div>
+
+                <div class="bento-card bento-social" data-scroll="fade-up">
+                    <h3><a href="/callme">Connect</a></h3>
+                    <div class="social-links-bento">
+                        {
+                            socialLinks.map((link) => (
+                                <a
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class={link.brand}
+                                    aria-label={link.name}
+                                >
+                                    <i class={link.iconClass} />
+                                </a>
+                            ))
+                        }
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gallery Section -->
+        <section id="gallery" class="gallery-section">
+            <div class="gallery-header">
+                <h2 class="section-heading" style="white-space: nowrap; text-align: center;">
+                    <a href="/highlight">Featured Works</a>
+                </h2>
+                <a href="/highlight" class="view-all-link"
+                    >View All <span class="material-symbols-outlined"
+                        >arrow_forward</span
+                    ></a
+                >
+            </div>
+
+            <div class="gallery-grid">
+                {
+                    featuredGallery.map((item, index) => (
+                        <GalleryItem
+                            src={item.src}
+                            title={item.title}
+                            desc={item.desc}
+                            lazy={index > 3}
+                        />
+                    ))
+                }
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact-section" data-scroll="fade-up">
+            <div class="contact-card">
+                <h2 class="section-heading">Get in Touch</h2>
+                <p class="contact-desc">
+                    喜歡我的作品或是想交朋友嗎？隨時歡迎透過以下方式聯絡我！
+                </p>
+                <a
+                    href="/callme"
+                    class="btn btn-primary magnetic-btn contact-btn"
+                >
+                    <span>聯絡資訊</span>
+                    <span class="material-symbols-outlined">send</span>
+                </a>
+            </div>
+        </section>
+    </main>
+</Layout>
+

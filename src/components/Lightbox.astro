@@ -1,0 +1,197 @@
+---
+// Lightbox.astro
+---
+<div id="lightbox" class="lightbox-overlay">
+    <div class="lightbox-container">
+        <button id="lightbox-close" class="lightbox-close-btn"><i class="fa-solid fa-xmark"></i></button>
+        <div class="lightbox-content">
+            <div class="lightbox-image-container">
+                <img id="lightbox-image" src="" alt="放大的圖片">
+            </div>
+            <div class="lightbox-text-container">
+                <h3 id="lightbox-title"></h3>
+                <p id="lightbox-description"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Includes logic from lightbox.js
+function initializeLightbox() {
+    const lightbox = document.getElementById('lightbox');
+    if (!lightbox) return;
+
+    const lightboxImage = document.getElementById('lightbox-image') as HTMLImageElement;
+    const lightboxTitle = document.getElementById('lightbox-title');
+    const lightboxDescription = document.getElementById('lightbox-description');
+    const lightboxCloseBtn = document.getElementById('lightbox-close');
+    let readMoreBtn = document.getElementById('read-more-btn') as HTMLButtonElement | null;
+
+    const createLinkIcon = (fontSize: string) => {
+        const sub = document.createElement('sub');
+        sub.style.cssText = 'display:inline-block;vertical-align:sub;margin-left:0.03em;line-height:1;';
+        const icon = document.createElement('span');
+        icon.className = 'material-symbols-outlined';
+        icon.style.cssText = `font-size:${fontSize};opacity:0.7;position:relative;top:0.18em;`;
+        icon.textContent = 'link';
+        sub.appendChild(icon);
+        return sub;
+    };
+
+    const createExternalLink = (linkText: string, linkUrl: string, styleText: string, iconSize: string) => {
+        const a = document.createElement('a');
+        a.href = linkUrl;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.style.cssText = styleText;
+        a.textContent = linkText;
+        a.appendChild(createLinkIcon(iconSize));
+        return a;
+    };
+
+    const renderLinkedTitle = (text: string) => {
+        if (!lightboxTitle) return;
+        const linkMatch = text.match(/^\[(.+?)\]\((https?:\/\/[^\s)]+)\)$/);
+        if (!linkMatch) {
+            lightboxTitle.textContent = text;
+            return;
+        }
+        const [, linkText, linkUrl] = linkMatch;
+        const link = createExternalLink(linkText, linkUrl, 'text-decoration:none; color:inherit; display:inline;', '0.85em');
+        lightboxTitle.replaceChildren(link);
+    };
+
+    const renderLinkedDescription = (text: string) => {
+        if (!lightboxDescription) return;
+        const fragment = document.createDocumentFragment();
+        const linkPattern = /\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g;
+        let lastIndex = 0;
+        let match;
+
+        while ((match = linkPattern.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+                fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+            }
+            fragment.appendChild(createExternalLink(match[1], match[2], 'text-decoration:inherit; color:inherit; display:inline;', '0.78em'));
+            lastIndex = linkPattern.lastIndex;
+        }
+        if (lastIndex < text.length) {
+            fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+        }
+        lightboxDescription.replaceChildren(fragment);
+    };
+
+    const openLightbox = (imgSrc: string, title: string, description: string) => {
+        if (lightboxImage) lightboxImage.src = imgSrc;
+        renderLinkedTitle(title);
+        renderLinkedDescription(description);
+
+        if (lightboxDescription) lightboxDescription.classList.remove('expanded');
+
+        if (!readMoreBtn && lightboxDescription?.parentNode) {
+            readMoreBtn = document.createElement('button');
+            readMoreBtn.id = 'read-more-btn';
+            readMoreBtn.className = 'read-more-btn';
+            lightboxDescription.parentNode.appendChild(readMoreBtn);
+        }
+        if (readMoreBtn) {
+            readMoreBtn.textContent = '查看更多';
+            readMoreBtn.style.display = 'none';
+
+            requestAnimationFrame(() => {
+                if (lightboxDescription && lightboxDescription.scrollHeight > lightboxDescription.clientHeight) {
+                    if (readMoreBtn) readMoreBtn.style.display = 'block';
+                }
+            });
+
+            if (!(readMoreBtn as any)._hasClickListener) {
+                readMoreBtn.addEventListener('click', () => {
+                    if (lightboxDescription?.classList.contains('expanded')) {
+                        lightboxDescription.classList.remove('expanded');
+                        if (readMoreBtn) readMoreBtn.textContent = '查看更多';
+                    } else {
+                        lightboxDescription?.classList.add('expanded');
+                        if (readMoreBtn) readMoreBtn.textContent = '收起';
+                    }
+                });
+                (readMoreBtn as any)._hasClickListener = true;
+            }
+        }
+
+        lightbox.classList.add('active');
+        document.body.classList.add('lightbox-active');
+    };
+
+    const closeLightbox = () => {
+        lightbox.classList.remove('active');
+        document.body.classList.remove('lightbox-active');
+        if (lightboxDescription) lightboxDescription.classList.remove('expanded');
+        if (readMoreBtn) {
+            readMoreBtn.textContent = '查看更多';
+            readMoreBtn.style.display = 'none';
+        }
+    };
+
+    document.body.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
+        const trigger = target.closest('.lightbox-trigger') as HTMLElement;
+        if (trigger) {
+            event.preventDefault();
+            const { imgSrc, title, description } = trigger.dataset;
+            openLightbox(imgSrc || (trigger as HTMLImageElement).src, title || '', description || '');
+        }
+    });
+
+    if (lightboxCloseBtn) {
+        lightboxCloseBtn.addEventListener('click', closeLightbox);
+    }
+
+    lightbox.addEventListener('click', (event) => {
+        if (event.target === lightbox || event.target === lightboxCloseBtn || (event.target as HTMLElement).closest('.lightbox-close-btn')) {
+            closeLightbox();
+        }
+    });
+
+    const lightboxContainer = lightbox.querySelector('.lightbox-container');
+    if (lightboxContainer) {
+        lightboxContainer.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && lightbox.classList.contains('active')) {
+            closeLightbox();
+        }
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const imgParam = urlParams.get('img');
+    if (imgParam) {
+        const findTriggerByImageSrc = (imgSrc: string) => {
+            const escapedSrc = window.CSS && CSS.escape ? CSS.escape(imgSrc) : imgSrc.replace(/"/g, '\\"');
+            return document.querySelector(`.lightbox-trigger[data-img-src="${escapedSrc}"]`) as HTMLElement;
+        };
+
+        const openImageParam = () => {
+            const trigger = findTriggerByImageSrc(imgParam);
+            if (trigger) {
+                const { imgSrc, title, description } = trigger.dataset;
+                openLightbox(imgSrc || (trigger as HTMLImageElement).src, title || '', description || '');
+            } else {
+                openLightbox(imgParam, '', '');
+            }
+        };
+
+        if (document.querySelector('.lightbox-trigger')) {
+            openImageParam();
+        } else {
+            document.addEventListener('gallery:rendered', openImageParam, { once: true });
+        }
+    }
+}
+
+document.addEventListener('astro:page-load', initializeLightbox);
+initializeLightbox();
+</script>

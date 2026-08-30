@@ -1,0 +1,50 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { SITE_DATA } from "../data/siteData";
+import GalleryItem from "../components/GalleryItem.astro";
+
+const { gallery } = SITE_DATA;
+---
+
+<Layout title="Featured Works - Benson Wu">
+    <main class="page-content-wrapper">
+        <section class="gallery-section page-top-padding">
+            <h1
+                class="page-title text-center"
+                data-scroll="fade-up"
+                style="font-size: 2.5rem; margin-bottom: 20px; font-weight: 800; white-space: nowrap;"
+            >
+                Featured <span class="accent-text">Works</span>
+            </h1>
+            <p
+                class="text-center text-muted"
+                data-scroll="fade-up"
+                style="margin-bottom: 40px; text-align: center;"
+            >
+                透過鏡頭記錄下的每一刻流光溢彩
+            </p>
+
+            <div class="gallery-grid">
+                {
+                    gallery.map((item, index) => (
+                        <GalleryItem
+                            src={item.src}
+                            title={item.title}
+                            desc={item.desc}
+                            lazy={index > 5}
+                        />
+                    ))
+                }
+            </div>
+        </section>
+        <div>
+            <a
+                class="gallery-desc"
+                href="https://wubenson0419.github.io/BensonWu_self-introduction/highlight.html"
+                style="display: block; text-align: center; margin-top: 20px; color: var(--text-muted);"
+                >若想了解更多內容，可以點我去舊網站看看</a
+            >
+        </div>
+    </main>
+</Layout>
+

@@ -1,0 +1,82 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { SITE_DATA } from "../data/siteData";
+
+const { profile, socialLinks } = SITE_DATA;
+---
+
+<Layout title={`Contact Me - ${profile.nickname}`}>
+    <main class="page-content-wrapper contact-page-wrapper">
+        <section class="contact-hero">
+            <div class="contact-glass-card" data-scroll="fade-up">
+                <div class="contact-avatar-wrapper">
+                    <img
+                        src={profile.avatarSrc}
+                        alt={profile.name}
+                        class="contact-avatar"
+                        fetchpriority="high"
+                    />
+                </div>
+
+                <h1
+                    class="page-title"
+                    data-scroll="fade-up"
+                    style="font-size: 2.5rem; margin-bottom: 20px; font-weight: 800; white-space: nowrap;"
+                >
+                    Let's <span class="accent-text">Connect</span>
+                </h1>
+                <p class="contact-subtitle" data-scroll="fade-up">
+                    歡迎透過社群平台或 Email 與我聯繫交流！
+                </p>
+
+                <div class="contact-info-list" data-scroll="fade-up">
+                    <div class="info-item">
+                        <span class="material-symbols-outlined icon-blue"
+                            >mail</span
+                        >
+                        <span>{profile.email}</span>
+                    </div>
+                </div>
+
+                <h3
+                    class="social-title"
+                    data-scroll="fade-up"
+                    style="margin-bottom: 15px; color: var(--text-main);"
+                >
+                    Find me on
+                </h3>
+                <div
+                    class="social-links-bento contact-social-bar"
+                    data-scroll="fade-up"
+                    style="justify-content: center; margin-bottom: 30px;"
+                >
+                    {
+                        socialLinks.map((link) => (
+                            <a
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class={link.brand}
+                                aria-label={link.name}
+                            >
+                                <i class={link.iconClass} />
+                            </a>
+                        ))
+                    }
+                </div>
+
+                <a
+                    href={`mailto:${profile.email}?subject=你好，想與您聯繫&body=您的姓名：%0A聯絡電話：%0A問題描述：%0A`}
+                    class="btn btn-primary magnetic-btn send-email-btn"
+                    data-scroll="fade-up"
+                >
+                    Send Email <span
+                        class="material-symbols-outlined"
+                        style="margin-left: 8px;">send</span
+                    >
+                </a>
+            </div>
+        </section>
+    </main>
+</Layout>
+

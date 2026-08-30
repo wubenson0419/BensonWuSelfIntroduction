@@ -1,0 +1,24 @@
+---
+export interface Props {
+    year: string;
+    title: string;
+    description: string;
+    image?: string;
+}
+
+const { year, title, description, image } = Astro.props;
+---
+<div class="bento-card timeline-item" data-scroll="fade-up">
+    <div class="timeline-year">{year}</div>
+    <div class="timeline-content">
+        <div class="timeline-text-content">
+            <h3>{title}</h3>
+            <p>{description}</p>
+        </div>
+        {image && (
+            <div class="timeline-img-wrapper lightbox-trigger" data-img-src={image} data-title={title} data-description={description}>
+                <img src={image} alt={title} loading="lazy" />
+            </div>
+        )}
+    </div>
+</div>
