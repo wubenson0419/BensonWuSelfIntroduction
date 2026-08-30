@@ -1,4 +1,6 @@
 ---
+import { Image } from "astro:assets";
+
 export interface Props {
     year: string;
     title: string;
@@ -17,7 +19,7 @@ const { year, title, description, image } = Astro.props;
         </div>
         {image && (
             <div class="timeline-img-wrapper lightbox-trigger" data-img-src={image} data-title={title} data-description={description}>
-                <img src={image} alt={title} loading="lazy" />
+                <Image src={image} alt={title} loading="lazy" width={120} height={120} />
             </div>
         )}
     </div>

@@ -3,13 +3,13 @@
 ---
 <div id="lightbox" class="lightbox-overlay">
     <div class="lightbox-container">
-        <button id="lightbox-close" class="lightbox-close-btn"><i class="fa-solid fa-xmark"></i></button>
+        <button id="lightbox-close" class="lightbox-close-btn" aria-label="關閉燈箱"><i class="fa-solid fa-xmark"></i></button>
         <div class="lightbox-content">
             <div class="lightbox-image-container">
-                <img id="lightbox-image" src="" alt="放大的圖片">
+                <img id="lightbox-image" src="" alt="放大的圖片" loading="lazy" decoding="async" width="1200" height="900">
             </div>
             <div class="lightbox-text-container">
-                <h3 id="lightbox-title"></h3>
+                <h3 id="lightbox-title" aria-live="polite">圖片</h3>
                 <p id="lightbox-description"></p>
             </div>
         </div>
@@ -52,9 +52,10 @@ function initializeLightbox() {
 
     const renderLinkedTitle = (text: string) => {
         if (!lightboxTitle) return;
-        const linkMatch = text.match(/^\[(.+?)\]\((https?:\/\/[^\s)]+)\)$/);
+        const safeText = text && text.trim() ? text : '圖片';
+        const linkMatch = safeText.match(/^\[(.+?)\]\((https?:\/\/[^\s)]+)\)$/);
         if (!linkMatch) {
-            lightboxTitle.textContent = text;
+            lightboxTitle.textContent = safeText;
             return;
         }
         const [, linkText, linkUrl] = linkMatch;
@@ -83,9 +84,14 @@ function initializeLightbox() {
     };
 
     const openLightbox = (imgSrc: string, title: string, description: string) => {
-        if (lightboxImage) lightboxImage.src = imgSrc;
-        renderLinkedTitle(title);
-        renderLinkedDescription(description);
+        if (lightboxImage) {
+            lightboxImage.src = imgSrc;
+            lightboxImage.alt = title && title.trim() ? title : '放大的圖片';
+            lightboxImage.loading = 'lazy';
+            lightboxImage.decoding = 'async';
+        }
+        renderLinkedTitle(title || '圖片');
+        renderLinkedDescription(description || '');
 
         if (lightboxDescription) lightboxDescription.classList.remove('expanded');
 

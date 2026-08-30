@@ -257,7 +257,7 @@ body.menu-active #menu-overlay {
     text-decoration: none;
     font-size: 1rem;
     font-weight: 700;
-    font-family: 'Chiron GoRound TC WS', 'Noto Sans TC', sans-serif;
+    font-family: var(--font-heading);
     transition: color 0.3s, transform 0.3s;
     padding: 5px 0;
     display: block;

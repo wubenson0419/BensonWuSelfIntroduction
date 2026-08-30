@@ -2,7 +2,6 @@
 import Layout from "../layouts/Layout.astro";
 import { SITE_DATA } from "../data/siteData";
 import GalleryItem from "../components/GalleryItem.astro";
-import { Image } from "astro:assets";
 
 const { profile, interests, socialLinks, gallery } = SITE_DATA;
 const featuredGallery = gallery.slice(0, 12);
@@ -21,19 +20,15 @@ const featuredGallery = gallery.slice(0, 12);
         </div>
         <div class="hero-image-container">
             <div class="hero-image-mask">
-                <!-- <img
+                <img
                     src={profile.avatarSrc}
                     alt={profile.name}
                     class="hero-image"
+                    width="400"
+                    height="400"
+                    loading="eager"
                     fetchpriority="high"
-                /> -->
-                <Image
-                src={profile.avatarSrc}
-                alt={profile.name}
-                class="hero-image"
-                width={400}
-                height={400}
-                loading="eager"
+                    decoding="async"
                 />
             </div>
         </div>

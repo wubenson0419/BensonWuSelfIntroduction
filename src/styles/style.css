@@ -9,9 +9,9 @@
     --text-muted: #8a8a93;
     --accent-blue: #4a90e2;
     --accent-glow: rgba(74, 144, 226, 0.4);
-    --font-heading: 'Chiron GoRound TC WS', 'Noto Sans TC', sans-serif;
-    --font-body: 'Noto Sans TC', sans-serif;
-    --font-code: 'Source Code Pro', monospace;
+    --font-heading: 'Chiron GoRound TC WS', 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans TC', sans-serif;
+    --font-body: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans TC', sans-serif;
+    --font-code: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 }
 
 * {
@@ -65,7 +65,7 @@ a {
 
 main {
     flex-grow: 1;
-    padding: 0 5%;
+    padding: 0 clamp(16px, 4vw, 48px);
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
@@ -104,8 +104,9 @@ main {
     font-size: clamp(1rem, 1.5vw, 1.5rem);
     color: var(--text-muted);
     margin-bottom: 40px;
-    font-family: "Source Code Pro";
-    font-weight: 100;
+    font-family: var(--font-code);
+    font-weight: 400;
+    letter-spacing: 0.02em;
 }
 
 .hero-cta {
@@ -212,11 +213,12 @@ main {
     color: var(--text-main);
     letter-spacing: -0.5px;
     font-weight: 800;
+    font-family: var(--font-heading);
 }
 
 .bento-section {
     padding: 80px 0;
-    font-family: "Chiron GoRound TC WS", 'Noto Sans TC', sans-serif;
+    font-family: var(--font-heading);
 }
 
 .bento-grid {
@@ -384,13 +386,13 @@ main {
 
 .gallery-desc {
     display: flex;
-    font-family: "Chiron GoRound TC WS", 'Noto Sans TC', sans-serif;
+    font-family: var(--font-heading);
     font-size: 14px;
     color: #8a8a93;
     justify-content: center; /* 垂直置中 */
     align-items: center;     /* 水平置中 */
     text-align: center;      /* 文字多行時強制居中 */
-    flex-direction: column;   /* 讓標題與幹話上下排列 */    
+    flex-direction: column;   /* 讓標題與幹話上下排列 */
 }
 
 .gallery-item {
@@ -579,7 +581,7 @@ main {
 }
 
 .bio-content {
-    font-family: "Chiron GoRound TC WS", 'Noto Sans TC', sans-serif;
+    font-family: var(--font-heading);
     font-size: 1.2rem;
     line-height: 1.8;
     color: var(--text-muted);
@@ -589,7 +591,7 @@ main {
 
 .experience-section {
     margin-bottom: 100px;
-    font-family: "Chiron GoRound TC WS", 'Noto Sans TC', sans-serif;
+    font-family: var(--font-heading);
 }
 
 .timeline-container {
@@ -734,7 +736,7 @@ main {
 }
 
 .contact-subtitle {
-    font-family: "Chiron GoRound TC WS", 'Noto Sans TC', sans-serif;
+    font-family: var(--font-heading);
     color: var(--text-muted);
     margin-bottom: 30px;
 }
@@ -786,7 +788,7 @@ main {
 .social-title {
     margin-bottom: 20px;
     font-size: 1.2rem;
-    font-family: "Chiron GoRound TC WS", 'Noto Sans TC', sans-serif;
+    font-family: var(--font-heading);
     color: var(--text-main);
 }
 
@@ -806,7 +808,7 @@ main {
 /* --- Utility Classes --- */
 .text-center {
     text-align: center;
-    font-family: "Chiron GoRound TC WS", 'Noto Sans TC', sans-serif;
+    font-family: var(--font-heading);
 }
 
 .text-muted {
@@ -820,6 +822,7 @@ main {
 .page-title {
     font-size: 3rem;
     margin-bottom: 20px;
+    font-family: var(--font-heading);
 }
 
 /* --- Responsive --- */
@@ -900,7 +903,7 @@ main {
 
     .computer-only-element {
     display: none;
-}
+    }
 }
 
 /* 兼容其他頁面 (如 highlight.html, callme.html) 確保舊有 class 可以運作 */
