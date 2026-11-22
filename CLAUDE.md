@@ -40,6 +40,8 @@ There is no test suite or linter configured.
 
 `tsconfig.json` excludes `old/` and `DOSMTH/` so the backup copies don't affect `astro check`.
 
+**Image protection** (owner's request): `astro.config.mjs` has a `prune-unused-images` integration that deletes unreferenced originals from `dist/_astro` after build (only thumbnails / ≤1600px viewer images are published); `public/_headers` sets `Cross-Origin-Resource-Policy: same-origin` + `X-Robots-Tag: noimageindex` on images; `src/scripts/protect.ts` blocks right-click/drag on photos and global `img` CSS disables drag/iOS long-press save. These are deterrents only — the source photos also live in the GitHub repo, so the repo should stay private.
+
 **Deployment**: pushing to `main` on GitHub deploys the site (Cloudflare Pages builds it). A visitor counter (Pages Function + KV) was prototyped and parked in `old/lab-v4.3/` for later.
 
 ## Non-source directories
