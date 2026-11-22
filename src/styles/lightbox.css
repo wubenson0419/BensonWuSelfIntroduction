@@ -203,7 +203,7 @@ body.lightbox-active {
         max-height: calc(100vh - 64px);
         padding: 0;
         overflow: hidden;
-        border-radius: var(--radius-m);
+        border-radius: var(--radius-img);
         border: 1px solid var(--line);
         background: var(--surface-1);
     }
