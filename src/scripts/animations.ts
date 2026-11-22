@@ -28,16 +28,31 @@ function scramble(el: HTMLElement, duration = 900) {
     el.dataset.scrambleText = target;
     el.setAttribute('aria-label', target);
     const chars = [...target];
-    const start = performance.now();
 
+    // 鎖住原本的尺寸：亂碼字元寬度不同，若不鎖住會讓文字換行改變，整個版面跟著跳
+    const rect = el.getBoundingClientRect();
+    const inline = getComputedStyle(el).display.startsWith('inline');
+    const prev = { width: el.style.width, height: el.style.height, whiteSpace: el.style.whiteSpace };
+    if (inline) {
+        el.style.width = `${rect.width}px`;
+        el.style.whiteSpace = 'nowrap';
+    } else {
+        el.style.height = `${rect.height}px`;
+    }
+
+    const start = performance.now();
     const frame = (now: number) => {
         const progress = Math.min(1, (now - start) / duration);
         const revealed = Math.floor(progress * chars.length);
         el.textContent = chars
             .map((ch, i) => (i < revealed || ch === ' ' ? ch : GLYPHS[(Math.random() * GLYPHS.length) | 0]))
             .join('');
-        if (progress < 1) requestAnimationFrame(frame);
-        else el.textContent = target;
+        if (progress < 1) {
+            requestAnimationFrame(frame);
+        } else {
+            el.textContent = target;
+            Object.assign(el.style, prev);
+        }
     };
     requestAnimationFrame(frame);
 }
@@ -64,7 +79,30 @@ function typewriter() {
     if (roles.length === 0) return;
 
     host.classList.add('is-active');
+
+    // 預留最長那句的高度：手機上較長的句子會換成兩行，若不預留，打字時整個 Hero 會上下跳
+    const line = host.closest<HTMLElement>('.hero-subtitle') ?? host;
+    const reserve = () => {
+        line.style.minHeight = '';
+        let max = 0;
+        for (const role of roles) {
+            out.textContent = role;
+            max = Math.max(max, line.offsetHeight);
+        }
+        line.style.minHeight = `${max}px`;
+    };
+    const current = () => roles[roleIndex].slice(0, charIndex);
+    reserve();
     out.textContent = '';
+    let resizeTimer = 0;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => {
+            reserve();
+            out.textContent = current();
+        }, 150);
+    });
+
     let roleIndex = 0;
     let charIndex = 0;
     let deleting = false;
