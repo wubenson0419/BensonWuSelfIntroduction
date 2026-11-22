@@ -28,6 +28,7 @@ body.lightbox-active {
 
 /* 手機（預設）：全螢幕 */
 .lightbox-container {
+    --ratio: 1.5; /* 目前照片的寬高比，由 Lightbox.astro 設定（電腦版用） */
     position: relative;
     width: 100%;
     height: 100%;
@@ -65,6 +66,7 @@ body.lightbox-active {
     will-change: transform;
 }
 
+/* 手機：維持線上版（v4.3）的顯示方式 */
 .lightbox-slide {
     flex: 0 0 calc(100% / 3);
     display: grid;
@@ -197,8 +199,15 @@ body.lightbox-active {
 
 /* 桌面：置中卡片，照片在左、說明在右 */
 @media (min-width: 900px) {
+    /* IG 電腦版：檢視區寬度跟著照片比例。
+       直式：寬 = 高 × 比例，照片剛好填滿、左右不留黑邊；
+       橫式：寬度到上限就停，照片上下留黑邊。 */
     .lightbox-container {
-        width: min(1100px, calc(100% - 180px));
+        --slide-h: min(calc(100vh - 64px), 900px);
+        --text-w: 340px;
+        --stage-max: calc(min(1100px, 100vw - 180px) - var(--text-w));
+        --stage-w: min(calc(var(--slide-h) * var(--ratio)), var(--stage-max));
+        width: auto;
         height: auto;
         max-height: calc(100vh - 64px);
         padding: 0;
@@ -210,16 +219,27 @@ body.lightbox-active {
 
     .lightbox-content {
         display: grid;
-        grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+        grid-template-columns: auto var(--text-w);
         grid-template-rows: 1fr auto;
     }
 
     .lightbox-stage {
         grid-row: 1 / 3;
+        width: var(--stage-w);
+        transition: width 0.42s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
+    /* 照片撐滿格子再用 contain 縮放，直式橫式都完整顯示、不會被裁切 */
     .lightbox-slide {
-        height: min(80vh, 760px);
+        display: block;
+        height: var(--slide-h);
+    }
+
+    .lightbox-slide img {
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        max-height: none;
     }
 
     .lightbox-dots {

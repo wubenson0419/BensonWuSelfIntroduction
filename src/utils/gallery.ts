@@ -75,15 +75,14 @@ export interface PhotoUrls {
   height: number;
 }
 
-/** 產生縮圖（300/600w）與檢視器大圖（≤1600px）的網址；GalleryItem 與首頁隨機照片共用 */
+/** 產生縮圖（300/600w）網址；檢視器直接使用原圖（不縮小、不重新壓縮）。GalleryItem 與首頁隨機照片共用 */
 export async function photoUrls(photo: Photo): Promise<PhotoUrls> {
   const { getImage } = await import('astro:assets');
   const thumb = await getImage({ src: photo.image, widths: [300, 600], format: 'webp' });
-  const large = await getImage({ src: photo.image, width: Math.min(1600, photo.image.width), format: 'webp' });
   return {
     thumb: thumb.src,
     srcset: thumb.srcSet.attribute,
-    large: large.src,
+    large: photo.image.src, // 原圖
     width: photo.image.width,
     height: photo.image.height,
   };

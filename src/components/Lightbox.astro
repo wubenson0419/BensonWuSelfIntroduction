@@ -120,6 +120,7 @@ function renderDots() {
 }
 
 function renderText() {
+    setRatio(current);
     const { title = '', description = '', meta = '' } = triggers[current]?.dataset ?? {};
     renderWithLinks(titleEl, title);
     titleEl.hidden = !title;
@@ -138,6 +139,13 @@ function renderText() {
 }
 
 /** 直接跳到某張（開啟時用） */
+/** 依照片比例調整電腦版檢視區寬度：直式剛好貼齊照片（不留黑邊），橫式維持上下黑邊 */
+function setRatio(index: number) {
+    const { w, h } = triggers[index]?.dataset ?? {};
+    const ratio = Number(w) / Number(h);
+    container.style.setProperty('--ratio', Number.isFinite(ratio) && ratio > 0 ? ratio.toFixed(4) : '1.5');
+}
+
 function showAt(index: number) {
     current = index;
     const [a, b, c] = slides();

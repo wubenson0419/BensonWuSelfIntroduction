@@ -56,6 +56,8 @@ const pool = await Promise.all(
                 description: p.desc,
                 meta: p.meta,
                 label: p.label,
+                w: String(p.width),
+                h: String(p.height),
             });
             a.setAttribute("aria-label", `查看照片：${p.label}`);
             const img = a.querySelector("img");

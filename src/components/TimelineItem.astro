@@ -1,5 +1,5 @@
 ---
-import { Image, getImage } from "astro:assets";
+import { Image } from "astro:assets";
 import { resolveImage } from "../utils/images";
 import { EXPERIENCE_TYPE_META, type ExperienceType } from "../data/experienceTypes";
 
@@ -17,10 +17,8 @@ const meta = EXPERIENCE_TYPE_META[type];
 
 // 照片放在可展開的下拉裡，展開後完整顯示（不裁切），點了可開檢視器看大圖
 const resolved = image ? resolveImage(image) : undefined;
-const large =
-    resolved === undefined || typeof resolved === "string"
-        ? resolved
-        : (await getImage({ src: resolved, width: Math.min(1600, resolved.width), format: "webp" })).src;
+// 檢視器直接顯示原圖
+const large = resolved === undefined || typeof resolved === "string" ? resolved : resolved.src;
 ---
 
 <li class="timeline-item" data-scroll="fade-up">
@@ -50,6 +48,8 @@ const large =
                         data-title={title}
                         data-description={description}
                         data-label={title}
+                        data-w={typeof resolved === "string" ? undefined : resolved.width}
+                        data-h={typeof resolved === "string" ? undefined : resolved.height}
                         aria-label={`查看大圖：${title}`}
                     >
                         {typeof resolved === "string" ? (
