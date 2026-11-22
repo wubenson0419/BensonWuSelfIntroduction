@@ -1,0 +1,133 @@
+---
+// F1 頁：目前不放在選單上，網址 /f1 直接打開。
+// 要公開時：Navbar.astro 的 links 加一行，並把下面的 noindex 拿掉。
+// 賽程、成績、積分在瀏覽器即時抓（src/scripts/f1.ts）；車手照與賽道圖在建置時抓（src/utils/f1Media.ts）。
+import Layout from "../layouts/Layout.astro";
+import { F1 } from "../data/f1";
+import { getF1Media } from "../utils/f1Media";
+import "../styles/f1.css";
+
+const media = await getF1Media();
+const favorites = F1.favorites.map((id) => ({ id, info: media.driverInfo[id], photo: media.drivers[id] }));
+const config = { favorites: F1.favorites, timeZone: F1.timeZone, teamColors: F1.teamColors, media };
+const credits = [...Object.values(media.drivers), ...Object.values(media.circuits)];
+---
+
+<Layout title="Formula 1 - Benson Wu" noindex>
+
+    <main class="container page f1-page" data-f1-root>
+        <header class="page-header">
+            <p class="eyebrow"><span class="prompt">$</span> f1 --season {media.season || "current"}</p>
+            <h1 class="page-title f1-title" data-scramble>Formula 1</h1>
+            <p class="section-sub">{media.season ? `${media.season} 賽季` : "本季"} · 時間皆為台北時間</p>
+        </header>
+
+        <!-- 支持的車手 -->
+        <section class="f1-section" aria-labelledby="fav-title">
+            <h2 id="fav-title" class="f1-heading">My Drivers</h2>
+            <div class="f1-favs">
+                {
+                    favorites.map(({ id, info, photo }) => (
+                        <article class="f1-fav" data-fav={id} data-scroll="fade-up">
+                            <div class="f1-fav-photo">
+                                {photo ? (
+                                    <img src={photo.src} alt={info?.name ?? id} loading="lazy" decoding="async" />
+                                ) : (
+                                    <span class="f1-fav-number">{info?.number}</span>
+                                )}
+                            </div>
+                            <div class="f1-fav-body">
+                                <p class="f1-fav-num" data-fav-number>{info?.number ? `#${info.number}` : ""}</p>
+                                <h3 class="f1-fav-name">{info?.name ?? id}</h3>
+                                <p class="f1-fav-team" data-fav-team>—</p>
+                                <dl class="f1-fav-stats">
+                                    <div><dt>排名</dt><dd data-fav-pos>—</dd></div>
+                                    <div><dt>積分</dt><dd data-fav-pts>—</dd></div>
+                                    <div><dt>勝場</dt><dd data-fav-wins>—</dd></div>
+                                    <div><dt>上一站</dt><dd data-fav-last>—</dd></div>
+                                </dl>
+                            </div>
+                        </article>
+                    ))
+                }
+            </div>
+        </section>
+
+        <!-- 下一站 -->
+        <section class="f1-section" aria-labelledby="next-title">
+            <h2 id="next-title" class="f1-heading">Next Race</h2>
+            <div class="panel f1-next" data-scroll="fade-up">
+                <div class="f1-next-info">
+                    <p class="f1-round" data-next-round></p>
+                    <h3 class="f1-next-name" data-next-name>讀取中…</h3>
+                    <p class="f1-muted" data-next-place></p>
+                    <div class="f1-countdown" data-next-countdown aria-label="距離正賽開始"></div>
+                </div>
+                <div class="f1-next-side">
+                    <figure class="f1-circuit" data-next-circuit hidden>
+                        <img alt="" loading="lazy" decoding="async" />
+                    </figure>
+                    <ul class="f1-sessions" data-next-sessions></ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 積分榜 -->
+        <section class="f1-section" aria-labelledby="standings-title">
+            <h2 id="standings-title" class="f1-heading">Standings</h2>
+            <div class="f1-tabs" role="tablist" aria-label="積分榜">
+                <button type="button" class="chip is-active" role="tab" aria-selected="true" data-tab="drivers">車手</button>
+                <button type="button" class="chip" role="tab" aria-selected="false" data-tab="teams">車隊</button>
+            </div>
+            <div class="panel f1-table-panel" data-scroll="fade-up">
+                <ol class="f1-table" data-standings="drivers" role="tabpanel"></ol>
+                <ol class="f1-table" data-standings="teams" role="tabpanel" hidden></ol>
+                <p class="f1-muted f1-status" data-standings-status>讀取中…</p>
+            </div>
+        </section>
+
+        <!-- 整季賽程 -->
+        <section class="f1-section" aria-labelledby="calendar-title">
+            <h2 id="calendar-title" class="f1-heading">Calendar</h2>
+            <p class="f1-muted f1-center">已完賽的分站點開可以看正賽、排位與衝刺賽成績</p>
+            <div class="f1-calendar" data-calendar>
+                <p class="f1-muted f1-status">讀取中…</p>
+            </div>
+        </section>
+
+        <footer class="f1-credits">
+            <p>
+                賽事資料：<a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noopener noreferrer">Jolpica F1 API</a>
+                · 本頁為個人粉絲頁，與 Formula 1 官方無關。
+            </p>
+            {
+                credits.length > 0 && (
+                    <details>
+                        <summary>圖片來源與授權（Wikimedia Commons）</summary>
+                        <ul>
+                            {credits.map((c) => (
+                                <li>
+                                    {c.title}：
+                                    <a href={c.filePage} target="_blank" rel="noopener noreferrer">{c.artist}</a>
+                                    {" · "}
+                                    {c.licenseUrl ? (
+                                        <a href={c.licenseUrl} target="_blank" rel="noopener noreferrer">{c.license}</a>
+                                    ) : (
+                                        c.license
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </details>
+                )
+            }
+        </footer>
+    </main>
+</Layout>
+
+<script type="application/json" is:inline id="f1-config" set:html={JSON.stringify(config)} />
+
+<script>
+    import { initF1 } from "../scripts/f1";
+    initF1();
+</script>

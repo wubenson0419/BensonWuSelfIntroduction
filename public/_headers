@@ -1,0 +1,9 @@
+# Cloudflare Pages 回應標頭
+# 圖片只允許本站網頁使用（其他網站無法直接嵌入盜連），並要求搜尋引擎不要收錄到圖片搜尋。
+/_astro/*
+  Cross-Origin-Resource-Policy: same-origin
+  X-Robots-Tag: noimageindex, noai, noimageai
+
+/images/*
+  Cross-Origin-Resource-Policy: same-origin
+  X-Robots-Tag: noimageindex, noai, noimageai

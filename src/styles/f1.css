@@ -1,0 +1,548 @@
+/* ==========================================================================
+   f1.css — F1 頁（/f1）專用
+   沿用全站深色風格與字體，車隊代表色由 JS 設定在 --team 變數上。
+   ========================================================================== */
+
+.f1-page {
+    --f1-red: #e10600;
+    max-width: 1000px;
+}
+
+.f1-title {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.f1-section {
+    padding-top: var(--space-7);
+}
+
+.f1-heading {
+    position: relative;
+    margin-bottom: var(--space-5);
+    text-align: center;
+    font-size: var(--fs-h2);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+/* 標題下的紅色小斜條 */
+.f1-heading::after {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 4px;
+    margin: var(--space-2) auto 0;
+    background: var(--f1-red);
+    transform: skewX(-20deg);
+}
+
+.f1-muted {
+    color: var(--text-muted);
+    font-size: var(--fs-small);
+}
+
+.f1-center {
+    text-align: center;
+    margin-bottom: var(--space-4);
+}
+
+.f1-status[hidden] {
+    display: none;
+}
+
+/* ---------------- 支持的車手 ---------------- */
+.f1-favs {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.f1-fav {
+    --team: var(--text-muted);
+    position: relative;
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: var(--space-4);
+    align-items: center;
+    padding: var(--space-4);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-l);
+    background:
+        linear-gradient(120deg, color-mix(in srgb, var(--team) 22%, transparent), transparent 55%),
+        var(--surface-1);
+    overflow: hidden;
+}
+
+/* 左側車隊色條 */
+.f1-fav::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: var(--team);
+}
+
+.f1-fav-photo {
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius-img);
+    overflow: hidden;
+    background: var(--surface-2);
+    display: grid;
+    place-items: center;
+}
+
+.f1-fav-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%;
+}
+
+.f1-fav-number {
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--team);
+}
+
+.f1-fav-num {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--team);
+}
+
+.f1-fav-name {
+    font-size: clamp(1.3rem, 4vw, 1.7rem);
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.f1-fav-team {
+    color: var(--text-muted);
+    font-size: var(--fs-small);
+    margin: 2px 0 var(--space-3);
+}
+
+.f1-fav-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-2);
+}
+
+.f1-fav-stats > div {
+    padding: var(--space-2) 0;
+    border-radius: var(--radius-s);
+    background: rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.f1-fav-stats dt {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.f1-fav-stats dd {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------------- 下一站 ---------------- */
+.f1-next {
+    display: grid;
+    gap: var(--space-5);
+    text-align: center;
+}
+
+.f1-round {
+    display: inline-block;
+    padding: 2px 12px;
+    margin-bottom: var(--space-2);
+    border-radius: var(--radius-pill);
+    background: var(--f1-red);
+    color: #fff;
+    font-weight: 700;
+    font-size: var(--fs-small);
+}
+
+.f1-next-name {
+    font-size: clamp(1.5rem, 5vw, 2.2rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: var(--space-1);
+}
+
+.f1-countdown {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-2);
+    max-width: 360px;
+    margin: var(--space-5) auto 0;
+}
+
+.f1-countdown span {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-3) 0;
+    border-radius: var(--radius-m);
+    background: var(--bg-main);
+    border: 1px solid var(--line);
+}
+
+.f1-countdown strong {
+    font-family: var(--font-heading);
+    font-size: clamp(1.6rem, 6vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.f1-countdown small {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.f1-live {
+    grid-column: 1 / -1;
+    color: var(--accent-green);
+    font-weight: 700;
+}
+
+.f1-circuit {
+    margin: 0 auto var(--space-4);
+    max-width: 360px;
+}
+
+.f1-circuit[hidden] {
+    display: none;
+}
+
+/* 賽道圖是黑線白底的 SVG，反相後融入深色背景 */
+.f1-circuit img {
+    width: 100%;
+    height: auto;
+    filter: invert(1) hue-rotate(180deg) brightness(1.1);
+    opacity: 0.9;
+}
+
+.f1-sessions {
+    text-align: left;
+}
+
+.f1-sessions li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding-block: 8px;
+    border-bottom: 1px solid var(--line);
+    font-size: var(--fs-small);
+}
+
+.f1-sessions li:last-child {
+    border-bottom: none;
+    color: var(--f1-red);
+    font-weight: 700;
+}
+
+.f1-sessions time {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+}
+
+.f1-sessions li:last-child time {
+    color: inherit;
+}
+
+/* ---------------- 排名列表（積分榜 / 成績） ---------------- */
+.f1-tabs {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+}
+
+.f1-tabs--small {
+    justify-content: flex-start;
+    margin-bottom: var(--space-3);
+}
+
+.f1-tabs--small .chip {
+    min-height: 36px;
+    padding: 0 14px;
+}
+
+.f1-table-panel {
+    padding: var(--space-3) var(--space-4);
+}
+
+.f1-table[hidden] {
+    display: none;
+}
+
+.f1-row {
+    --team: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-2);
+    border-bottom: 1px solid var(--line);
+    border-radius: var(--radius-s);
+}
+
+.f1-row:last-child {
+    border-bottom: none;
+}
+
+.f1-row-pos {
+    width: 2em;
+    flex-shrink: 0;
+    text-align: center;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.f1-row-bar {
+    width: 4px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: 2px;
+    background: var(--team);
+}
+
+.f1-row-photo {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center 20%;
+    background: var(--surface-2);
+}
+
+.f1-row-name {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.f1-row-name small {
+    font-weight: 400;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.f1-row-value {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+/* 支持的車手：底色＋星號 */
+.f1-row.is-fav {
+    background: color-mix(in srgb, var(--team) 16%, transparent);
+}
+
+.f1-row.is-fav .f1-row-name::after {
+    content: 'My driver';
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--team);
+}
+
+.f1-row.is-fav .f1-row-value {
+    color: var(--text-main);
+}
+
+/* 前三名名次上色 */
+.f1-table .f1-row:nth-child(1) .f1-row-pos { color: #f5c542; }
+.f1-table .f1-row:nth-child(2) .f1-row-pos { color: #c9ced6; }
+.f1-table .f1-row:nth-child(3) .f1-row-pos { color: #d08a4f; }
+
+/* ---------------- 整季賽程 ---------------- */
+.f1-calendar {
+    display: grid;
+    gap: var(--space-2);
+}
+
+.f1-race-row {
+    --team: var(--line-strong);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    background: var(--surface-1);
+    overflow: hidden;
+}
+
+.f1-race-row > summary,
+div.f1-race-row {
+    display: grid;
+    grid-template-columns: 3em 1fr auto;
+    grid-template-areas:
+        'round name status'
+        'round date status';
+    align-items: center;
+    gap: 2px var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-left: 4px solid var(--team);
+}
+
+.f1-race-row > summary {
+    cursor: pointer;
+    list-style: none;
+    grid-template-columns: 3em 1fr auto auto;
+    grid-template-areas:
+        'round name status arrow'
+        'round date status arrow';
+}
+
+.f1-race-row > summary::-webkit-details-marker {
+    display: none;
+}
+
+.f1-race-round {
+    grid-area: round;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: var(--text-muted);
+}
+
+.f1-race-name {
+    grid-area: name;
+    display: flex;
+    flex-direction: column;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.f1-race-name small {
+    font-weight: 400;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.f1-race-date {
+    grid-area: date;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.f1-badge {
+    grid-area: status;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--line-strong);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.f1-badge .material-symbols-outlined {
+    font-size: 1rem;
+    color: #f5c542;
+}
+
+.f1-badge--done {
+    color: var(--text-main);
+    border-color: var(--team);
+}
+
+.f1-badge--done.is-fav {
+    background: color-mix(in srgb, var(--team) 30%, transparent);
+}
+
+.f1-badge--next {
+    background: var(--f1-red);
+    border-color: var(--f1-red);
+    color: #fff;
+}
+
+.f1-race-row.is-next {
+    border-color: var(--f1-red);
+}
+
+.f1-race-arrow {
+    grid-area: arrow;
+    color: var(--text-muted);
+    transition: transform 0.3s var(--ease-out);
+}
+
+.f1-race-row[open] .f1-race-arrow {
+    transform: rotate(180deg);
+}
+
+.f1-race-body {
+    padding: 0 var(--space-4) var(--space-4);
+}
+
+/* ---------------- 來源 ---------------- */
+.f1-credits {
+    margin-top: var(--space-8);
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.f1-credits a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.f1-credits details {
+    margin-top: var(--space-3);
+}
+
+.f1-credits summary {
+    cursor: pointer;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.f1-credits ul {
+    text-align: left;
+    max-width: 640px;
+    margin: var(--space-2) auto 0;
+    display: grid;
+    gap: 4px;
+}
+
+/* ---------------- 寬螢幕 ---------------- */
+@media (min-width: 760px) {
+    .f1-favs {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .f1-fav {
+        grid-template-columns: 110px 1fr;
+    }
+}
+
+@media (min-width: 900px) {
+    .f1-next {
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .f1-race-row > summary:hover .f1-race-name {
+        color: var(--accent-blue);
+    }
+
+    .f1-credits a:hover {
+        color: var(--text-main);
+    }
+}

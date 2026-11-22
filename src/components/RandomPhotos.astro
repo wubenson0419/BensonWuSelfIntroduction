@@ -19,7 +19,7 @@ const pool = await Promise.all(
 <div class="photo-grid" data-random-photos>
     {PHOTOS.slice(0, COUNT).map((photo) => <GalleryItem photo={photo} />)}
 </div>
-<script type="application/json" id="photo-pool" set:html={JSON.stringify(pool)} />
+<script type="application/json" is:inline id="photo-pool" set:html={JSON.stringify(pool)} />
 
 <script>
     interface PoolItem {

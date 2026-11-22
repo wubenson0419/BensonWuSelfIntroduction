@@ -77,3 +77,14 @@ image: "/images/other/某張照片.webp"
 **要公開履歷時**：
 1. 在 `src/components/Navbar.astro` 的 `links` 加一行 `{ href: "/resume", label: "履歷" }`。
 2. 把 `src/pages/resume.astro` 裡 `<Layout ... noindex>` 的 `noindex` 刪掉。
+
+## F1 頁（/f1）
+和履歷頁一樣**沒有放在選單上**，也設定了不讓搜尋引擎收錄。
+- 賽程、成績、積分榜都是打開網頁時從免費的 Jolpica F1 API 即時抓取，**不用手動更新**。
+- 車手照和賽道圖在 `npm run build` 時，從 Wikipedia 和 Wikimedia Commons 抓取**自由授權**的圖片，頁面底部會列出作者和授權。圖片不會存進倉庫。新賽季重新部署一次就會更新。
+- 設定在 `src/data/f1.ts`：
+  - `favorites`：支持的車手。會放在最上面的大卡片，並在積分榜和成績上標「★ My driver」。車手代號（driverId）可以到 https://api.jolpi.ca/ergast/f1/current/drivers.json 查，例如 `max_verstappen`、`tsunoda`。
+  - `timeZone`：顯示時間用的時區
+  - `teamColors`：車隊代表色（近似色）。新車隊沒有設定時會顯示灰色。
+
+**要公開 F1 頁時**：在 `Navbar.astro` 的 `links` 加一行 `{ href: "/f1", label: "F1" }`，並刪掉 `src/pages/f1.astro` 裡的 `noindex`。

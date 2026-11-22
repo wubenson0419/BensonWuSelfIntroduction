@@ -102,6 +102,10 @@ img {
     display: block;
     max-width: 100%;
     height: auto;
+    /* 圖片防護：不能拖曳、不能選取、iOS 長按不跳出「儲存影像」 */
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-touch-callout: none;
 }
 
 ul, ol {
