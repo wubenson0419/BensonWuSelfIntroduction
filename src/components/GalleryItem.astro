@@ -1,38 +1,36 @@
-<!-- ---
+---
+import { photoUrls, type Photo } from "../utils/gallery";
+
 export interface Props {
-    src: string;
-    title: string;
-    desc: string;
+    photo: Photo;
     lazy?: boolean;
 }
 
-const { src, title, desc, lazy = true } = Astro.props;
----
-<div class="gallery-item lightbox-trigger" data-img-src={src} data-title={title} data-description={desc}>
-    <img src={src} alt={title} loading={lazy ? "lazy" : "eager"} />
-</div> -->
----
-import { Image } from "astro:assets";
-
-export interface Props {
-    src: string;
-    title: string;
-    desc: string;
-    lazy?: boolean;
-}
-
-const { src, title, desc, lazy = true } = Astro.props;
+const { photo, lazy = true } = Astro.props;
+const urls = await photoUrls(photo);
+const label = photo.title || photo.albumLabel;
 ---
 
-<div class="gallery-item lightbox-trigger" data-img-src={src} data-title={title} data-description={desc}>
-    <Image
-        src={src}
-        alt={title}
+<a
+    href={urls.large}
+    class="gallery-item lightbox-trigger"
+    data-img-src={urls.large}
+    data-original={photo.src}
+    data-title={photo.title}
+    data-description={photo.desc}
+    data-meta={photo.albumLabel}
+    data-album={photo.album}
+    data-label={label}
+    aria-label={`查看照片：${label}`}
+>
+    <img
+        src={urls.thumb}
+        srcset={urls.srcset}
+        sizes="(max-width: 1100px) 33vw, 360px"
+        width={urls.width}
+        height={urls.height}
+        alt={label}
         loading={lazy ? "lazy" : "eager"}
-        fetchpriority={lazy ? "auto" : "high"}
         decoding="async"
-        width={800}
-        height={600}
-        format="webp"
     />
-</div>
+</a>

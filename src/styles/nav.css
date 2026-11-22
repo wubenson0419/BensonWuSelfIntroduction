@@ -1,5 +1,6 @@
 /*
     --- nav.css ---
+    v4.3：恢復最初版選單的玻璃風格（玻璃按鈕、玻璃抽屜、每個連結一顆玻璃膠囊、底線動畫）。
     此 CSS 檔案專門為導覽列（Navigation Menu）及其相關元件定義樣式。
     - 包含漢堡選單按鈕、側邊導覽列、遮罩層和多層次下拉選單的樣式和動畫。
 */
@@ -35,7 +36,6 @@ body.menu-active {
     display: grid;
     place-items: center;
     cursor: pointer;
-    outline: 0;
     transition: transform 0.25s cubic-bezier(.4,2,.6,1), box-shadow 0.3s, background 0.3s;
     overflow: visible;
     justify-content: center;
@@ -161,57 +161,34 @@ body.menu-active #menu-overlay {
     pointer-events: auto;
 }
 
-/* --- 2. 層級式子菜單樣式 (Tiered Submenu Styles) --- */
-
-/* .menu-item-has-children > a：擁有子選單的連結樣式。 */
-.menu-item-has-children > a {
-    position: relative; /* 相對定位，以便子元素可以絕對定位。 */
+/* --- 2. 手機選單連結底線與目前頁面（原本放在 style.css，外觀不變） --- */
+#main-nav a {
+    position: relative;
+    padding-bottom: 6px;
 }
 
-/* .dropdown-icon：下拉箭頭圖示的樣式。 */
-.dropdown-icon {
-    position: absolute; /* 絕對定位在連結內部。 */
-    right: 15px; /* 距離右側 15px。 */
-    top: 50%; /* 垂直置中。 */
-    transform: translateY(-50%); /* 修正垂直置中時的偏移。 */
-    font-size: 16px; /* 字體大小。 */
-    transition: transform 0.3s ease; /* 增加旋轉動畫。 */
+#main-nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--accent-blue);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* .submenu：子選單容器的樣式。 */
-.submenu {
-    list-style: none; /* 移除列表符號。 */
-    display: none; /* 預設隱藏子選單。 */
-    padding-left: 20px; /* 增加縮排。 */
-    margin-top: 10px; /* 上方留出空間。 */
+#main-nav a:hover::after,
+#main-nav a.is-current::after {
+    transform: scaleX(1);
 }
 
-/* .submenu a：子選單連結的樣式。 */
-.submenu a {
-    font-size: 20px; /* 字體大小比主選單小。 */
-    color: #cccccc; /* 文字顏色比主選單淺。 */
-    padding-top: 8px; /* 內部邊距。 */
-    padding-bottom: 8px;
-}
-
-/* .submenu a:hover：滑鼠懸停時的文字顏色。 */
-.submenu a:hover {
-    color: #FFFFFF;
-}
-
-/* .menu-item-has-children.is-open > .submenu：當項目被「開啟」時，顯示子選單。 */
-.menu-item-has-children.is-open > .submenu {
-    display: block; /* 讓子選單顯示出來。 */
-}
-
-/* .menu-item-has-children.is-open > a > .dropdown-icon：當項目開啟時，讓箭頭圖示旋轉。 */
-.menu-item-has-children.is-open > a > .dropdown-icon {
-    transform: translateY(-50%) rotate(180deg); /* 旋轉 180 度，表示選單已展開。 */
-}
-
-/* .submenu .submenu：巢狀子選單的縮排。 */
-.submenu .submenu {
-    padding-left: 25px; /* 進一步增加縮排，以區分層級。 */
+#main-nav a.is-current {
+    color: var(--accent-blue) !important;
+    text-shadow: 0 0 12px var(--accent-glow);
+    font-weight: 700;
 }
 
 /* --- 3. 桌面版膠囊選單 (Apple AirPods Pro Style Glassmorphism) --- */
@@ -283,4 +260,11 @@ body.menu-active #menu-overlay {
     .desktop-nav-container {
         display: none !important;
     }
+}
+/* 鍵盤焦點（原本的 outline: 0 會讓 Tab 看不到位置） */
+#menu-toggle:focus-visible,
+#main-nav a:focus-visible,
+.desktop-nav-links li a:focus-visible {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 3px;
 }

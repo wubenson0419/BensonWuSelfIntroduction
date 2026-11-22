@@ -1,87 +1,90 @@
 ---
-import { Image } from "astro:assets";
 import Layout from "../layouts/Layout.astro";
 import { SITE_DATA } from "../data/siteData";
+import SocialLinks from "../components/SocialLinks.astro";
 
-const { profile, socialLinks } = SITE_DATA;
+const { profile, copy } = SITE_DATA;
+const mailto = `mailto:${profile.email}?subject=${encodeURIComponent("你好，想與您聯繫")}&body=${encodeURIComponent("您的姓名：\n聯絡電話：\n問題描述：\n")}`;
 ---
 
-<Layout title={`Contact Me - ${profile.nickname}`}>
-    <main class="page-content-wrapper contact-page-wrapper">
-        <section class="contact-hero">
-            <div class="contact-glass-card" data-scroll="fade-up">
-                <div class="contact-avatar-wrapper">
-                    <Image
-                        src={profile.avatarSrc}
-                        alt={profile.name}
-                        class="contact-avatar"
-                        width={120}
-                        height={120}
-                        loading="eager"
-                        fetchpriority="high"
-                        decoding="async"
-                    />
-                </div>
-
-                <h1
-                    class="page-title"
-                    data-scroll="fade-up"
-                    style="font-size: 2.5rem; margin-bottom: 20px; font-weight: 800; white-space: nowrap;"
-                >
-                    Let's <span class="accent-text">Connect</span>
-                </h1>
-                <p class="contact-subtitle" data-scroll="fade-up">
-                    歡迎透過社群平台或 Email 與我聯繫交流！
-                </p>
-
-                <div class="contact-info-list" data-scroll="fade-up">
-                    <div class="info-item">
-                        <span class="material-symbols-outlined icon-blue"
-                            >mail</span
-                        >
-                        <span><a href="mailto:wub0419666work@gmail.com?subject=輸入標題：&body=您好，......%0A%0A我的姓名：%0A聯絡電話：%0A問題描述：%0A%0A%0A(以上是寄件預設內容，請自行修改)">{profile.email}</a></span>
-                    </div>
-                </div>
-
-                <h3
-                    class="social-title"
-                    data-scroll="fade-up"
-                    style="margin-bottom: 15px; color: var(--text-main);"
-                >
-                    Find me on
-                </h3>
-                <div
-                    class="social-links-bento contact-social-bar"
-                    data-scroll="fade-up"
-                    style="justify-content: center; margin-bottom: 30px;"
-                >
-                    {
-                        socialLinks.map((link) => (
-                            <a
-                                href={link.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class={link.brand}
-                                aria-label={link.name}
-                            >
-                                <i class={link.iconClass} />
-                            </a>
-                        ))
-                    }
-                </div>
-
-                <a
-                    href={`mailto:${profile.email}?subject=你好，想與您聯繫&body=您的姓名：%0A聯絡電話：%0A問題描述：%0A`}
-                    class="btn btn-primary magnetic-btn send-email-btn"
-                    data-scroll="fade-up"
-                >
-                    Send Email <span
-                        class="material-symbols-outlined"
-                        style="margin-left: 8px;">send</span
-                    >
-                </a>
+<Layout title={`Contact - ${profile.nickname}`}>
+    <main class="container page">
+        <section class="contact-card" data-scroll="fade-up">
+            <div class="contact-avatar-wrapper">
+                <img
+                    src={profile.avatarSrc}
+                    alt={profile.name}
+                    class="contact-avatar"
+                    width="112"
+                    height="112"
+                    loading="eager"
+                    decoding="async"
+                />
             </div>
+            <p class="eyebrow"><span class="prompt">$</span> ping bensonwu -t</p>
+            <h1 class="page-title" data-scramble>{copy.contactPage.title}</h1>
+            <p class="section-sub">{copy.contactPage.subtitle}</p>
+
+            <div class="email-box">
+                <span class="material-symbols-outlined" aria-hidden="true">mail</span>
+                <a href={mailto} class="email-address">{profile.email}</a>
+                <button type="button" class="icon-btn" id="copy-email" data-email={profile.email} aria-label="複製 Email">
+                    <span class="material-symbols-outlined" aria-hidden="true">content_copy</span>
+                </button>
+            </div>
+            <p class="copy-status" id="copy-status" aria-live="polite"></p>
+
+            <a href={mailto} class="btn btn-primary magnetic-btn btn-block">
+                {copy.contactPage.sendButton} <span class="material-symbols-outlined" aria-hidden="true">send</span>
+            </a>
+
+            <div class="contact-divider"><span>{copy.contactPage.socialLabel}</span></div>
+            <SocialLinks variant="icons" />
         </section>
     </main>
 </Layout>
 
+<script>
+    /**
+     * 複製文字。navigator.clipboard 只能在 HTTPS 或 localhost 使用，
+     * 用手機連電腦 IP（http://192.168.x.x）測試時會失敗，所以退回舊的 execCommand 作法。
+     */
+    async function copyText(text: string): Promise<boolean> {
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch {
+                /* 改用下面的備援 */
+            }
+        }
+        const area = document.createElement("textarea");
+        area.value = text;
+        area.setAttribute("readonly", "");
+        area.style.cssText = "position:fixed;top:0;left:0;opacity:0;";
+        document.body.append(area);
+        area.select();
+        area.setSelectionRange(0, text.length); // iOS
+        let ok = false;
+        try {
+            ok = document.execCommand("copy");
+        } catch {
+            ok = false;
+        }
+        area.remove();
+        return ok;
+    }
+
+    const btn = document.getElementById("copy-email") as HTMLButtonElement | null;
+    const status = document.getElementById("copy-status");
+    btn?.addEventListener("click", async () => {
+        const icon = btn.querySelector(".material-symbols-outlined");
+        const ok = await copyText(btn.dataset.email ?? "");
+        if (ok && icon) icon.textContent = "check";
+        if (status) status.textContent = ok ? "已複製到剪貼簿" : "複製失敗，請手動選取";
+        setTimeout(() => {
+            if (icon) icon.textContent = "content_copy";
+            if (status) status.textContent = "";
+        }, 2000);
+    });
+</script>

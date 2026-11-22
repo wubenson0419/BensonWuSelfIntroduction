@@ -1,23 +1,16 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { SITE_DATA } from "../data/siteData";
-import GalleryItem from "../components/GalleryItem.astro";
+import SocialLinks from "../components/SocialLinks.astro";
+import RandomPhotos from "../components/RandomPhotos.astro";
+import { PHOTOS } from "../utils/gallery";
 
-const { profile, interests, socialLinks, gallery } = SITE_DATA;
-const featuredGallery = gallery.slice(0, 12);
+const { profile, interests, copy } = SITE_DATA;
 ---
 
 <Layout title={`${profile.name} - ${profile.nickname} | Personal Website`}>
-    <!-- Hero Section -->
-    <header class="hero-section">
-        <div class="hero-content">
-            <h1 class="hero-title">
-                Hello, I'm <br /><span
-                    class="accent-text"
-                    data-profile="nickname">{profile.nickname}</span>
-            </h1>
-            <p class="hero-subtitle" set:html={profile.heroSubtitle} />
-        </div>
+    <!-- Hero：置中對稱 -->
+    <header class="hero-section container">
         <div class="hero-image-container">
             <div class="hero-image-mask">
                 <img
@@ -32,115 +25,91 @@ const featuredGallery = gallery.slice(0, 12);
                 />
             </div>
         </div>
+        <p class="eyebrow hero-eyebrow"><span class="prompt">$</span> whoami</p>
+        <h1 class="hero-title">
+            Hello, I'm <span class="accent-text" data-scramble>{profile.nickname}</span>
+        </h1>
+        <p class="hero-subtitle">
+            <span class="typewriter" data-roles={JSON.stringify(profile.roles)}>
+                <span class="typewriter-text" set:html={profile.heroSubtitle} />
+            </span><span class="caret" aria-hidden="true"></span>
+        </p>
+        <div class="hero-cta">
+            <a href="/aboutme" class="btn btn-primary magnetic-btn">
+                關於我 <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+            </a>
+            <a href="/callme" class="btn btn-outline magnetic-btn">聯絡我</a>
+        </div>
     </header>
 
-    <main>
-        <!-- Bento Box Section -->
-        <section id="about" class="bento-section">
-            <h2 class="section-heading"><a href="/aboutme">About Me</a></h2>
+    <main class="container">
+        <!-- About：2×2 等高 -->
+        <section id="about" class="section" aria-labelledby="about-heading">
+            <div class="section-head">
+                <h2 id="about-heading" class="section-heading" data-scramble>About Me</h2>
+            </div>
+
             <div class="bento-grid">
-                <div
-                    class="bento-card bento-intro"
-                    data-scroll="fade-up"
-                    style="text-align: center; align-items: center;"
-                >
-                    <h3><a href="/aboutme">Profile</a></h3>
-                    <h4><span>{profile.name}</span></h4>
-                    <p>
-                        <!-- <strong>Birthday:</strong>
-                        <span>{profile.birthday}</span> -->
-                        <strong>Role:</strong>
-                        <span>{profile.role}</span>
-                    </p>
-                    <p>
-                        <strong>Nickname:</strong>
-                        <span>{profile.nickname}</span>
-                    </p>
-
+                <div class="panel" data-scroll="fade-up">
+                    <h3 class="panel-title">Profile</h3>
+                    <dl class="fact-list">
+                        <div><dt>暱稱</dt><dd>{profile.name}</dd></div>
+                        <div><dt>英文</dt><dd>{profile.nickname}</dd></div>
+                        <div><dt>身分</dt><dd>{profile.role}</dd></div>
+                    </dl>
                 </div>
-
-                <div class="bento-card bento-edu" data-scroll="fade-up">
-                    <h3><a href="/aboutme">Education</a></h3>
-                    <p>{profile.school}</p>
-                    <p>{profile.major}</p>
-                    <p class="status">{profile.status}</p>
+                <div class="panel" data-scroll="fade-up">
+                    <h3 class="panel-title">Education</h3>
+                    <dl class="fact-list">
+                        <div><dt>學校</dt><dd>{profile.school}</dd></div>
+                        <div><dt>科系</dt><dd>{profile.major}</dd></div>
+                        <div><dt>狀態</dt><dd><span class="status">{profile.status}</span></dd></div>
+                    </dl>
                 </div>
-
-                <div class="bento-card bento-hobbies" data-scroll="fade-up">
-                    <h3><a href="/aboutme">Interests</a></h3>
-                    <div class="tags">
-                        {
-                            interests.map((interest) => (
-                                <span class="tag">{interest}</span>
-                            ))
-                        }
-                    </div>
+                <div class="panel" data-scroll="fade-up">
+                    <h3 class="panel-title">Interests</h3>
+                    <ul class="tags">
+                        {interests.map((interest) => <li class="tag">{interest}</li>)}
+                    </ul>
                 </div>
-
-                <div class="bento-card bento-social" data-scroll="fade-up">
-                    <h3><a href="/callme">Connect</a></h3>
-                    <div class="social-links-bento">
-                        {
-                            socialLinks.map((link) => (
-                                <a
-                                    href={link.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class={link.brand}
-                                    aria-label={link.name}
-                                >
-                                    <i class={link.iconClass} />
-                                </a>
-                            ))
-                        }
-                    </div>
+                <div class="panel" data-scroll="fade-up">
+                    <h3 class="panel-title">Connect</h3>
+                    <SocialLinks variant="icons" />
                 </div>
+            </div>
+
+            <div class="section-foot">
+                <a href="/aboutme" class="text-link">
+                    看我的經歷 <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                </a>
             </div>
         </section>
 
-        <!-- Gallery Section -->
-        <section id="gallery" class="gallery-section">
-            <div class="gallery-header">
-                <h2 class="section-heading" style="white-space: nowrap; text-align: center;">
-                    <a href="/highlight">Featured Works</a>
-                </h2>
-                <a href="/highlight" class="view-all-link"
-                    >View All <span class="material-symbols-outlined"
-                        >arrow_forward</span
-                    ></a
-                >
+        <!-- Photos：2 排 × 3 張，隨機 -->
+        <section id="gallery" class="section" aria-labelledby="works-heading">
+            <div class="section-head">
+                <h2 id="works-heading" class="section-heading" data-scramble>{copy.photos.homeTitle}</h2>
+                <p class="section-sub">{copy.photos.homeSub}</p>
             </div>
 
-            <div class="gallery-grid">
-                {
-                    featuredGallery.map((item, index) => (
-                        <GalleryItem
-                            src={item.src}
-                            title={item.title}
-                            desc={item.desc}
-                            lazy={index > 3}
-                        />
-                    ))
-                }
+            <RandomPhotos />
+
+            <div class="section-foot">
+                <a href="/highlight" class="text-link">
+                    查看全部 {PHOTOS.length} 張 <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                </a>
             </div>
         </section>
 
-        <!-- Contact Section -->
-        <section id="contact" class="contact-section" data-scroll="fade-up">
-            <div class="contact-card">
-                <h2 class="section-heading">Get in Touch</h2>
-                <p class="contact-desc">
-                    喜歡我的作品或是想交朋友嗎？隨時歡迎透過以下方式聯絡我！
-                </p>
-                <a
-                    href="/callme"
-                    class="btn btn-primary magnetic-btn contact-btn"
-                >
-                    <span>聯絡資訊</span>
-                    <span class="material-symbols-outlined">send</span>
+        <!-- Contact CTA -->
+        <section id="contact" class="section">
+            <div class="cta-band" data-scroll="fade-up">
+                <h2 class="section-heading" data-scramble>{copy.contactCta.title}</h2>
+                <p class="section-sub">{copy.contactCta.text}</p>
+                <a href="/callme" class="btn btn-primary magnetic-btn">
+                    {copy.contactCta.button} <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
                 </a>
             </div>
         </section>
     </main>
 </Layout>
-

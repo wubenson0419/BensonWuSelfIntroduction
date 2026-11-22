@@ -1,45 +1,39 @@
 ---
+import { getCollection, render } from "astro:content";
 import Layout from "../layouts/Layout.astro";
 import { SITE_DATA } from "../data/siteData";
 import TimelineItem from "../components/TimelineItem.astro";
 
-const { profile, experiences } = SITE_DATA;
+const { profile } = SITE_DATA;
+
+// 經歷：src/content/experiences/*.md，依年月由新到舊
+const entries = (await getCollection("experiences")).sort((a, b) => b.data.year.localeCompare(a.data.year));
+const experiences = await Promise.all(
+    entries.map(async (entry) => ({ entry, Content: (await render(entry)).Content })),
+);
 ---
 
 <Layout title={`About Me - ${profile.nickname}`}>
-    <main class="page-content-wrapper">
-        <!-- Bio Section -->
-        <section class="bio-section">
-            <h1
-                class="page-title"
-                data-scroll="fade-up"
-                style="font-size: 3rem; margin-bottom: 20px; font-weight: 800;"
-            >
-                About <span class="accent-text">Benson</span>
-            </h1>
-            <div class="bio-content bento-card" data-scroll="fade-up">
-                <p class="bio-text">{profile.bio}</p>
-            </div>
-        </section>
+    <main class="container page">
+        <header class="page-header">
+            <p class="eyebrow"><span class="prompt">$</span> cat about.md</p>
+            <h1 class="page-title">About <span class="accent-text" data-scramble>Benson</span></h1>
+            <p class="page-lead" data-scroll="fade-up">{profile.bio}</p>
+        </header>
 
-        <!-- Experiences Timeline -->
-        <section class="experience-section">
-            <h2 class="section-heading text-center" data-scroll="fade-up">
-                Experiences & Activities
-            </h2>
-            <div class="timeline-container">
+        <section class="section" aria-labelledby="exp-heading">
+            <div class="section-head">
+                <h2 id="exp-heading" class="section-heading" data-scramble>Experiences &amp; Activities</h2>
+            </div>
+            <ol class="timeline">
                 {
-                    experiences.map((exp) => (
-                        <TimelineItem
-                            year={exp.year}
-                            title={exp.title}
-                            description={exp.description}
-                            image={exp.image}
-                        />
+                    experiences.map(({ entry, Content }) => (
+                        <TimelineItem {...entry.data} description={entry.body?.trim() ?? ""}>
+                            <Content />
+                        </TimelineItem>
                     ))
                 }
-            </div>
+            </ol>
         </section>
     </main>
 </Layout>
-

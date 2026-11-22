@@ -1,0 +1,119 @@
+---
+// 履歷頁：目前不放在選單上，網址 /resume 直接打開。
+// 要公開時：Navbar.astro 的 links 加一行，並把下面的 noindex 拿掉。
+import { getCollection, render } from "astro:content";
+import Layout from "../layouts/Layout.astro";
+import { SITE_DATA } from "../data/siteData";
+import { RESUME } from "../data/resume";
+import { EXPERIENCE_TYPE_META } from "../data/experienceTypes";
+
+const { profile, socialLinks, interests } = SITE_DATA;
+
+const entries = (await getCollection("experiences")).sort((a, b) => b.data.year.localeCompare(a.data.year));
+const sections = await Promise.all(
+    RESUME.sections.map(async (section) => ({
+        title: section.title,
+        items: await Promise.all(
+            entries
+                .filter((e) => section.types.includes(e.data.type))
+                .map(async (e) => ({ data: e.data, Content: (await render(e)).Content })),
+        ),
+    })),
+);
+---
+
+<Layout title={`Resume - ${profile.name} ${profile.nickname}`} noindex>
+    <main class="container page resume">
+        <header class="resume-header" data-scroll="fade-up">
+            <div class="contact-avatar-wrapper">
+                <img src={profile.avatarSrc} alt={profile.name} class="contact-avatar" width="112" height="112" decoding="async" />
+            </div>
+            <p class="eyebrow"><span class="prompt">$</span> cat resume.md</p>
+            <h1 class="page-title">{profile.name} <span class="accent-text">{profile.nickname}</span></h1>
+            <p class="section-sub">{RESUME.headline}</p>
+            <ul class="resume-contact">
+                <li>
+                    <span class="material-symbols-outlined" aria-hidden="true">mail</span>
+                    <a href={`mailto:${profile.email}`}>{profile.email}</a>
+                </li>
+                {
+                    socialLinks
+                        .filter((l) => l.brand === "github" || l.brand === "instagram")
+                        .map((l) => (
+                            <li>
+                                <i class={l.iconClass} aria-hidden="true" />
+                                <a href={l.url} target="_blank" rel="noopener noreferrer">{l.url.replace(/^https?:\/\/(www\.)?/, "")}</a>
+                            </li>
+                        ))
+                }
+            </ul>
+            {
+                RESUME.showPrintButton && (
+                    <button type="button" class="btn btn-outline resume-print" id="print-resume">
+                        列印 / 存成 PDF
+                    </button>
+                )
+            }
+        </header>
+
+        <section class="resume-section" data-scroll="fade-up">
+            <h2 class="resume-heading">自我介紹</h2>
+            <p class="resume-text">{profile.bio}</p>
+        </section>
+
+        {
+            sections.map((section) =>
+                section.items.length > 0 && (
+                    <section class="resume-section" data-scroll="fade-up">
+                        <h2 class="resume-heading">{section.title}</h2>
+                        <ul class="resume-list">
+                            {section.items.map(({ data, Content }) => (
+                                <li class="resume-item">
+                                    <time class="resume-year">{data.year}</time>
+                                    <div>
+                                        <h3>
+                                            <span class="material-symbols-outlined resume-icon" aria-hidden="true">
+                                                {EXPERIENCE_TYPE_META[data.type].icon}
+                                            </span>
+                                            {data.title}
+                                        </h3>
+                                        <div class="resume-desc"><Content /></div>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                ),
+            )
+        }
+
+        <section class="resume-section" data-scroll="fade-up">
+            <h2 class="resume-heading">技能</h2>
+            <dl class="resume-skills">
+                {
+                    RESUME.skills.map((group) => (
+                        <div>
+                            <dt>{group.title}</dt>
+                            <dd>
+                                <ul class="tags">
+                                    {group.items.map((item) => <li class="tag">{item}</li>)}
+                                </ul>
+                            </dd>
+                        </div>
+                    ))
+                }
+            </dl>
+        </section>
+
+        <section class="resume-section" data-scroll="fade-up">
+            <h2 class="resume-heading">興趣</h2>
+            <ul class="tags">
+                {interests.map((i) => <li class="tag">{i}</li>)}
+            </ul>
+        </section>
+    </main>
+</Layout>
+
+<script>
+    document.getElementById("print-resume")?.addEventListener("click", () => window.print());
+</script>

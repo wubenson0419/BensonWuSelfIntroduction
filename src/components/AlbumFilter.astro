@@ -1,0 +1,47 @@
+---
+// 作品頁的相簿篩選膠囊（由 SITE_DATA.albums / 資料夾自動產生）
+import { ALBUMS, PHOTOS } from "../utils/gallery";
+---
+
+{
+    ALBUMS.length > 1 && (
+        <div class="album-filter" role="group" aria-label="篩選相簿" data-album-filter>
+            <button type="button" class="chip is-active" data-album="" aria-pressed="true">
+                全部 <span class="chip-count">{PHOTOS.length}</span>
+            </button>
+            {ALBUMS.map((a) => (
+                <button type="button" class="chip" data-album={a.folder} aria-pressed="false" title={a.label}>
+                    {a.short} <span class="chip-count">{a.count}</span>
+                </button>
+            ))}
+        </div>
+    )
+}
+
+<script>
+    const filter = document.querySelector<HTMLElement>("[data-album-filter]");
+    filter?.addEventListener("click", (e) => {
+        const chip = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-album]");
+        if (!chip) return;
+        const album = chip.dataset.album ?? "";
+
+        filter.querySelectorAll<HTMLButtonElement>("button[data-album]").forEach((b) => {
+            const active = b === chip;
+            b.classList.toggle("is-active", active);
+            b.setAttribute("aria-pressed", String(active));
+        });
+
+        document.querySelectorAll<HTMLElement>(".photo-grid .gallery-item").forEach((item) => {
+            const show = !album || item.dataset.album === album;
+            item.hidden = !show;
+            if (show) {
+                // 重新播放淡入
+                item.classList.remove("is-filtered-in");
+                void item.offsetWidth;
+                item.classList.add("is-filtered-in");
+            }
+        });
+        // 版面高度改變，通知動畫重新計算捲動觸發點
+        document.dispatchEvent(new CustomEvent("layout:changed"));
+    });
+</script>

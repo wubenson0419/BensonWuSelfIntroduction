@@ -2,49 +2,31 @@
 import Layout from "../layouts/Layout.astro";
 import { SITE_DATA } from "../data/siteData";
 import GalleryItem from "../components/GalleryItem.astro";
+import AlbumFilter from "../components/AlbumFilter.astro";
+import { PHOTOS } from "../utils/gallery";
 
-const { gallery } = SITE_DATA;
+const { copy } = SITE_DATA;
 ---
 
-<Layout title="Featured Works - Benson Wu">
-    <main class="page-content-wrapper">
-        <section class="gallery-section page-top-padding">
-            <h1
-                class="page-title text-center"
-                data-scroll="fade-up"
-                style="font-size: 2.5rem; margin-bottom: 20px; font-weight: 800; white-space: nowrap;"
-            >
-                Featured <span class="accent-text">Works</span>
-            </h1>
-            <p
-                class="text-center text-muted"
-                data-scroll="fade-up"
-                style="margin-bottom: 40px; text-align: center;"
-            >
-                透過鏡頭記錄下的每一刻流光溢彩
-            </p>
+<Layout title="Photos - Benson Wu">
+    <main class="container page">
+        <header class="page-header">
+            <p class="eyebrow"><span class="prompt">$</span> cat photo.md</p>
+            <h1 class="page-title" data-scramble>{copy.photos.pageTitle}</h1>
+            <p class="section-sub">{copy.photos.pageSub}</p>
+        </header>
 
-            <div class="gallery-grid">
-                {
-                    gallery.map((item, index) => (
-                        <GalleryItem
-                            src={item.src}
-                            title={item.title}
-                            desc={item.desc}
-                            lazy={index > 5}
-                        />
-                    ))
-                }
-            </div>
+        <AlbumFilter />
+
+        <section class="photo-grid" aria-label="照片">
+            {PHOTOS.map((photo, index) => <GalleryItem photo={photo} lazy={index > 8} />)}
         </section>
-        <div>
-            <a
-                class="gallery-desc"
-                href="https://wubenson0419.github.io/BensonWu_self-introduction/highlight.html"
-                style="display: block; text-align: center; margin-top: 20px; color: var(--text-muted);"
-                >若想了解更多內容，可以點我去舊網站看看</a
-            >
-        </div>
+
+        <p class="page-note">
+            <a href="https://wubenson0419.github.io/BensonWu_self-introduction/highlight.html" class="text-link">
+                若想了解更多內容，可以去舊網站看看
+                <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+            </a>
+        </p>
     </main>
 </Layout>
-

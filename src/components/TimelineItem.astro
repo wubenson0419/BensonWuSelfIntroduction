@@ -1,26 +1,65 @@
 ---
-import { Image } from "astro:assets";
+import { Image, getImage } from "astro:assets";
+import { resolveImage } from "../utils/images";
+import { EXPERIENCE_TYPE_META, type ExperienceType } from "../data/experienceTypes";
 
 export interface Props {
     year: string;
+    type: ExperienceType;
     title: string;
+    /** 純文字版內文，給檢視器用；畫面上顯示的是 slot（Markdown 渲染結果） */
     description: string;
     image?: string;
 }
 
-const { year, title, description, image } = Astro.props;
+const { year, type, title, description, image } = Astro.props;
+const meta = EXPERIENCE_TYPE_META[type];
+
+// 照片放在可展開的下拉裡，展開後完整顯示（不裁切），點了可開檢視器看大圖
+const resolved = image ? resolveImage(image) : undefined;
+const large =
+    resolved === undefined || typeof resolved === "string"
+        ? resolved
+        : (await getImage({ src: resolved, width: Math.min(1600, resolved.width), format: "webp" })).src;
 ---
-<div class="bento-card timeline-item" data-scroll="fade-up">
-    <div class="timeline-year">{year}</div>
-    <div class="timeline-content">
-        <div class="timeline-text-content">
-            <h3>{title}</h3>
-            <p>{description}</p>
-        </div>
-        {image && (
-            <div class="timeline-img-wrapper lightbox-trigger" data-img-src={image} data-title={title} data-description={description}>
-                <Image src={image} alt={title} loading="lazy" width={120} height={120} />
-            </div>
-        )}
-    </div>
-</div>
+
+<li class="timeline-item" data-scroll="fade-up">
+    <span class="timeline-node" aria-hidden="true">
+        <span class="material-symbols-outlined">{meta.icon}</span>
+    </span>
+    <article class="timeline-card">
+        <header class="timeline-meta">
+            <time class="timeline-year">{year}</time>
+            <span class={`timeline-type timeline-type--${type}`}>{meta.label}</span>
+        </header>
+        <h3>{title}</h3>
+        <div class="timeline-body"><slot /></div>
+        {
+            resolved && large && (
+                <details class="timeline-photo">
+                    <summary>
+                        <span class="material-symbols-outlined" aria-hidden="true">image</span>
+                        照片
+                        <span class="material-symbols-outlined timeline-photo-arrow" aria-hidden="true">expand_more</span>
+                    </summary>
+                    <a
+                        href={large}
+                        class="timeline-photo-link lightbox-trigger"
+                        data-img-src={large}
+                        data-original={image}
+                        data-title={title}
+                        data-description={description}
+                        data-label={title}
+                        aria-label={`查看大圖：${title}`}
+                    >
+                        {typeof resolved === "string" ? (
+                            <img src={resolved} alt={title} loading="lazy" decoding="async" />
+                        ) : (
+                            <Image src={resolved} alt={title} widths={[480, 960]} sizes="(max-width: 900px) 90vw, 480px" loading="lazy" decoding="async" format="webp" />
+                        )}
+                    </a>
+                </details>
+            )
+        }
+    </article>
+</li>

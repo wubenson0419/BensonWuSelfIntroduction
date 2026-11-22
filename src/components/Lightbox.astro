@@ -1,203 +1,312 @@
 ---
-// Lightbox.astro
+// Lightbox.astro — IG 式照片檢視器（連續輪播）
+// 任何帶 .lightbox-trigger 與 data-img-src / data-title / data-description（選填 data-meta）的元素都能開啟
 ---
-<div id="lightbox" class="lightbox-overlay">
+<div id="lightbox" class="lightbox-overlay" role="dialog" aria-modal="true" aria-label="照片檢視器" hidden>
+    <button id="lightbox-close" class="lightbox-btn lightbox-close-btn" aria-label="關閉">
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
+    </button>
+    <button id="lightbox-prev" class="lightbox-btn lightbox-nav lightbox-prev" aria-label="上一張">
+        <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+    </button>
+    <button id="lightbox-next" class="lightbox-btn lightbox-nav lightbox-next" aria-label="下一張">
+        <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+    </button>
+
     <div class="lightbox-container">
-        <button id="lightbox-close" class="lightbox-close-btn" aria-label="關閉燈箱"><i class="fa-solid fa-xmark"></i></button>
-        <div class="lightbox-content">
-            <div class="lightbox-image-container">
-                <img id="lightbox-image" src="" alt="放大的圖片" loading="lazy" decoding="async" width="1200" height="900">
+        <figure class="lightbox-content">
+            <div class="lightbox-stage" id="lightbox-stage">
+                <div class="lightbox-track" id="lightbox-track">
+                    <div class="lightbox-slide"><img alt="" decoding="async" draggable="false" /></div>
+                    <div class="lightbox-slide"><img alt="" decoding="async" draggable="false" /></div>
+                    <div class="lightbox-slide"><img alt="" decoding="async" draggable="false" /></div>
+                </div>
             </div>
-            <div class="lightbox-text-container">
-                <h3 id="lightbox-title" aria-live="polite">圖片</h3>
+            <div class="lightbox-dots" id="lightbox-dots" aria-hidden="true"></div>
+            <figcaption class="lightbox-text-container" aria-live="polite">
+                <h2 id="lightbox-title"></h2>
                 <p id="lightbox-description"></p>
-            </div>
-        </div>
+                <button id="read-more-btn" class="read-more-btn" type="button" hidden>查看更多</button>
+                <p id="lightbox-meta" class="lightbox-meta"></p>
+            </figcaption>
+        </figure>
     </div>
 </div>
 
 <script>
-// Includes logic from lightbox.js
-function initializeLightbox() {
-    const lightbox = document.getElementById('lightbox');
-    if (!lightbox) return;
+const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
-    const lightboxImage = document.getElementById('lightbox-image') as HTMLImageElement;
-    const lightboxTitle = document.getElementById('lightbox-title');
-    const lightboxDescription = document.getElementById('lightbox-description');
-    const lightboxCloseBtn = document.getElementById('lightbox-close');
-    let readMoreBtn = document.getElementById('read-more-btn') as HTMLButtonElement | null;
+const lightbox = $<HTMLDivElement>('lightbox');
+const container = lightbox.querySelector<HTMLElement>('.lightbox-container')!;
+const stage = $('lightbox-stage');
+const track = $('lightbox-track');
+const titleEl = $('lightbox-title');
+const descEl = $('lightbox-description');
+const metaEl = $('lightbox-meta');
+const dotsEl = $('lightbox-dots');
+const readMoreBtn = $<HTMLButtonElement>('read-more-btn');
+const closeBtn = $<HTMLButtonElement>('lightbox-close');
+const prevBtn = $<HTMLButtonElement>('lightbox-prev');
+const nextBtn = $<HTMLButtonElement>('lightbox-next');
 
-    const createLinkIcon = (fontSize: string) => {
-        const sub = document.createElement('sub');
-        sub.style.cssText = 'display:inline-block;vertical-align:sub;margin-left:0.03em;line-height:1;';
-        const icon = document.createElement('span');
-        icon.className = 'material-symbols-outlined';
-        icon.style.cssText = `font-size:${fontSize};opacity:0.7;position:relative;top:0.18em;`;
-        icon.textContent = 'link';
-        sub.appendChild(icon);
-        return sub;
-    };
+const LINK = /\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g;
+const MAX_DOTS = 5;
+const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+const BASE = -100 / 3; // 軌道停在中間那張
 
-    const createExternalLink = (linkText: string, linkUrl: string, styleText: string, iconSize: string) => {
+let triggers: HTMLElement[] = [];
+let current = -1;
+let returnFocus: HTMLElement | null = null;
+let animating = false;
+
+const slides = () => Array.from(track.children) as HTMLElement[];
+const wrap = (i: number) => (i + triggers.length) % triggers.length;
+
+/** 把 [文字](網址) 轉成外部連結，其餘當純文字 */
+function renderWithLinks(el: HTMLElement, text: string) {
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    for (const m of text.matchAll(LINK)) {
+        if (m.index! > last) frag.append(text.slice(last, m.index));
         const a = document.createElement('a');
-        a.href = linkUrl;
+        a.href = m[2];
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
-        a.style.cssText = styleText;
-        a.textContent = linkText;
-        a.appendChild(createLinkIcon(iconSize));
-        return a;
-    };
-
-    const renderLinkedTitle = (text: string) => {
-        if (!lightboxTitle) return;
-        const safeText = text && text.trim() ? text : '圖片';
-        const linkMatch = safeText.match(/^\[(.+?)\]\((https?:\/\/[^\s)]+)\)$/);
-        if (!linkMatch) {
-            lightboxTitle.textContent = safeText;
-            return;
-        }
-        const [, linkText, linkUrl] = linkMatch;
-        const link = createExternalLink(linkText, linkUrl, 'text-decoration:none; color:inherit; display:inline;', '0.85em');
-        lightboxTitle.replaceChildren(link);
-    };
-
-    const renderLinkedDescription = (text: string) => {
-        if (!lightboxDescription) return;
-        const fragment = document.createDocumentFragment();
-        const linkPattern = /\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g;
-        let lastIndex = 0;
-        let match;
-
-        while ((match = linkPattern.exec(text)) !== null) {
-            if (match.index > lastIndex) {
-                fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
-            }
-            fragment.appendChild(createExternalLink(match[1], match[2], 'text-decoration:inherit; color:inherit; display:inline;', '0.78em'));
-            lastIndex = linkPattern.lastIndex;
-        }
-        if (lastIndex < text.length) {
-            fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
-        }
-        lightboxDescription.replaceChildren(fragment);
-    };
-
-    const openLightbox = (imgSrc: string, title: string, description: string) => {
-        if (lightboxImage) {
-            lightboxImage.src = imgSrc;
-            lightboxImage.alt = title && title.trim() ? title : '放大的圖片';
-            lightboxImage.loading = 'lazy';
-            lightboxImage.decoding = 'async';
-        }
-        renderLinkedTitle(title || '圖片');
-        renderLinkedDescription(description || '');
-
-        if (lightboxDescription) lightboxDescription.classList.remove('expanded');
-
-        if (!readMoreBtn && lightboxDescription?.parentNode) {
-            readMoreBtn = document.createElement('button');
-            readMoreBtn.id = 'read-more-btn';
-            readMoreBtn.className = 'read-more-btn';
-            lightboxDescription.parentNode.appendChild(readMoreBtn);
-        }
-        if (readMoreBtn) {
-            readMoreBtn.textContent = '查看更多';
-            readMoreBtn.style.display = 'none';
-
-            requestAnimationFrame(() => {
-                if (lightboxDescription && lightboxDescription.scrollHeight > lightboxDescription.clientHeight) {
-                    if (readMoreBtn) readMoreBtn.style.display = 'block';
-                }
-            });
-
-            if (!(readMoreBtn as any)._hasClickListener) {
-                readMoreBtn.addEventListener('click', () => {
-                    if (lightboxDescription?.classList.contains('expanded')) {
-                        lightboxDescription.classList.remove('expanded');
-                        if (readMoreBtn) readMoreBtn.textContent = '查看更多';
-                    } else {
-                        lightboxDescription?.classList.add('expanded');
-                        if (readMoreBtn) readMoreBtn.textContent = '收起';
-                    }
-                });
-                (readMoreBtn as any)._hasClickListener = true;
-            }
-        }
-
-        lightbox.classList.add('active');
-        document.body.classList.add('lightbox-active');
-    };
-
-    const closeLightbox = () => {
-        lightbox.classList.remove('active');
-        document.body.classList.remove('lightbox-active');
-        if (lightboxDescription) lightboxDescription.classList.remove('expanded');
-        if (readMoreBtn) {
-            readMoreBtn.textContent = '查看更多';
-            readMoreBtn.style.display = 'none';
-        }
-    };
-
-    document.body.addEventListener('click', (event) => {
-        const target = event.target as HTMLElement;
-        const trigger = target.closest('.lightbox-trigger') as HTMLElement;
-        if (trigger) {
-            event.preventDefault();
-            const { imgSrc, title, description } = trigger.dataset;
-            openLightbox(imgSrc || (trigger as HTMLImageElement).src, title || '', description || '');
-        }
-    });
-
-    if (lightboxCloseBtn) {
-        lightboxCloseBtn.addEventListener('click', closeLightbox);
+        a.className = 'lightbox-link';
+        a.textContent = m[1];
+        const icon = document.createElement('span');
+        icon.className = 'material-symbols-outlined';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = 'link';
+        a.append(icon);
+        frag.append(a);
+        last = m.index! + m[0].length;
     }
-
-    lightbox.addEventListener('click', (event) => {
-        if (event.target === lightbox || event.target === lightboxCloseBtn || (event.target as HTMLElement).closest('.lightbox-close-btn')) {
-            closeLightbox();
-        }
-    });
-
-    const lightboxContainer = lightbox.querySelector('.lightbox-container');
-    if (lightboxContainer) {
-        lightboxContainer.addEventListener('click', (event) => {
-            event.stopPropagation();
-        });
-    }
-
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && lightbox.classList.contains('active')) {
-            closeLightbox();
-        }
-    });
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const imgParam = urlParams.get('img');
-    if (imgParam) {
-        const findTriggerByImageSrc = (imgSrc: string) => {
-            const escapedSrc = window.CSS && CSS.escape ? CSS.escape(imgSrc) : imgSrc.replace(/"/g, '\\"');
-            return document.querySelector(`.lightbox-trigger[data-img-src="${escapedSrc}"]`) as HTMLElement;
-        };
-
-        const openImageParam = () => {
-            const trigger = findTriggerByImageSrc(imgParam);
-            if (trigger) {
-                const { imgSrc, title, description } = trigger.dataset;
-                openLightbox(imgSrc || (trigger as HTMLImageElement).src, title || '', description || '');
-            } else {
-                openLightbox(imgParam, '', '');
-            }
-        };
-
-        if (document.querySelector('.lightbox-trigger')) {
-            openImageParam();
-        } else {
-            document.addEventListener('gallery:rendered', openImageParam, { once: true });
-        }
-    }
+    if (last < text.length) frag.append(text.slice(last));
+    el.replaceChildren(frag);
 }
 
-document.addEventListener('astro:page-load', initializeLightbox);
-initializeLightbox();
+function setSlide(slide: HTMLElement, index: number) {
+    const img = slide.querySelector('img')!;
+    const t = triggers[index];
+    const src = t?.dataset.imgSrc ?? '';
+    if (img.getAttribute('src') !== src) img.src = src;
+    img.alt = (t?.dataset.label || t?.dataset.title || '').replace(LINK, '$1') || '照片';
+}
+
+function setTrack(offsetPercent: number, animate: boolean) {
+    track.style.transition = animate ? `transform 0.42s ${EASE}` : 'none';
+    track.style.transform = `translateX(${offsetPercent}%)`;
+}
+
+/** IG 式圓點：最多 5 顆，視窗跟著目前位置移動 */
+function renderDots() {
+    const total = triggers.length;
+    if (total < 2) {
+        dotsEl.replaceChildren();
+        return;
+    }
+    const count = Math.min(MAX_DOTS, total);
+    const start = Math.min(Math.max(0, current - Math.floor(count / 2)), total - count);
+    dotsEl.replaceChildren(
+        ...Array.from({ length: count }, (_, i) => {
+            const dot = document.createElement('span');
+            dot.className = 'lightbox-dot';
+            if (start + i === current) dot.classList.add('is-active');
+            if ((i === 0 && start > 0) || (i === count - 1 && start + count < total)) dot.classList.add('is-small');
+            return dot;
+        }),
+    );
+}
+
+function renderText() {
+    const { title = '', description = '', meta = '' } = triggers[current]?.dataset ?? {};
+    renderWithLinks(titleEl, title);
+    titleEl.hidden = !title;
+    renderWithLinks(descEl, description);
+    descEl.hidden = !description;
+    metaEl.textContent = meta;
+    metaEl.hidden = !meta;
+
+    descEl.classList.remove('expanded');
+    readMoreBtn.textContent = '查看更多';
+    readMoreBtn.hidden = true;
+    requestAnimationFrame(() => {
+        readMoreBtn.hidden = !description || descEl.scrollHeight <= descEl.clientHeight + 1;
+    });
+    renderDots();
+}
+
+/** 直接跳到某張（開啟時用） */
+function showAt(index: number) {
+    current = index;
+    const [a, b, c] = slides();
+    const multiple = triggers.length > 1;
+    setSlide(b, current);
+    if (multiple) {
+        setSlide(a, wrap(current - 1));
+        setSlide(c, wrap(current + 1));
+    }
+    track.classList.toggle('is-single', !multiple);
+    prevBtn.hidden = nextBtn.hidden = !multiple;
+    setTrack(BASE, false);
+    renderText();
+}
+
+/** 滑到上一張 / 下一張：整條軌道移動，旁邊那張連著進來 */
+function step(dir: 1 | -1) {
+    if (triggers.length < 2 || animating) return;
+    animating = true;
+    current = wrap(current + dir);
+    renderText();
+    setTrack(dir === 1 ? 2 * BASE : 0, true);
+
+    let done = false;
+    const finish = () => {
+        if (done) return;
+        done = true;
+        // 動畫結束後輪替 DOM，不重新載入正在看的那張
+        if (dir === 1) {
+            track.append(slides()[0]);
+            setSlide(slides()[2], wrap(current + 1));
+        } else {
+            track.prepend(slides()[2]);
+            setSlide(slides()[0], wrap(current - 1));
+        }
+        setTrack(BASE, false);
+        animating = false;
+    };
+    track.addEventListener('transitionend', finish, { once: true });
+    setTimeout(finish, 600); // 保險：transitionend 沒觸發時
+}
+
+function open(trigger: HTMLElement) {
+    // 只取目前看得到的（例如作品頁篩選後）
+    triggers = Array.from(document.querySelectorAll<HTMLElement>('.lightbox-trigger')).filter(
+        (t) => !t.hidden,
+    );
+    returnFocus = trigger;
+    lightbox.hidden = false;
+    showAt(Math.max(0, triggers.indexOf(trigger)));
+    requestAnimationFrame(() => lightbox.classList.add('active'));
+    document.body.classList.add('lightbox-active');
+    closeBtn.focus();
+}
+
+function close() {
+    lightbox.classList.remove('active');
+    document.body.classList.remove('lightbox-active');
+    setTimeout(() => {
+        if (lightbox.classList.contains('active')) return;
+        lightbox.hidden = true;
+        container.style.transform = '';
+        lightbox.style.backgroundColor = '';
+    }, 300);
+    returnFocus?.focus();
+}
+
+/* ---------- 觸控手勢：左右拖動軌道、往下滑關閉 ---------- */
+let startX = 0;
+let startY = 0;
+let startT = 0;
+let axis: 'x' | 'y' | null = null;
+let dx = 0;
+let dy = 0;
+
+stage.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1 || animating) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    startT = performance.now();
+    axis = null;
+    dx = dy = 0;
+    container.style.transition = 'none';
+}, { passive: true });
+
+stage.addEventListener('touchmove', (e) => {
+    if (e.touches.length !== 1 || animating) return;
+    dx = e.touches[0].clientX - startX;
+    dy = e.touches[0].clientY - startY;
+    if (!axis && Math.hypot(dx, dy) > 8) axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+
+    if (axis === 'x' && triggers.length > 1) {
+        e.preventDefault();
+        // 換算成軌道寬度的百分比（軌道 = 3 張寬）
+        const pct = (dx / stage.clientWidth) * (100 / 3);
+        setTrack(BASE + pct, false);
+    } else if (axis === 'y' && dy > 0 && container.scrollTop <= 0) {
+        e.preventDefault();
+        container.style.transform = `translateY(${dy}px) scale(${1 - Math.min(dy / 2000, 0.08)})`;
+        lightbox.style.backgroundColor = `rgba(5, 5, 6, ${Math.max(0.3, 0.95 - dy / 600)})`;
+    }
+}, { passive: false });
+
+stage.addEventListener('touchend', () => {
+    if (animating) return;
+    const fast = performance.now() - startT < 250;
+    container.style.transition = '';
+
+    if (axis === 'x' && triggers.length > 1) {
+        const commit = Math.abs(dx) > stage.clientWidth * 0.2 || (fast && Math.abs(dx) > 30);
+        if (commit) step(dx < 0 ? 1 : -1);
+        else setTrack(BASE, true); // 彈回
+    } else if (axis === 'y') {
+        if (dy > 120 || (fast && dy > 50)) close();
+        else {
+            container.style.transform = '';
+            lightbox.style.backgroundColor = '';
+        }
+    }
+    axis = null;
+});
+
+/* ---------- 點擊 / 鍵盤 ---------- */
+document.addEventListener('click', (e) => {
+    const trigger = (e.target as HTMLElement).closest<HTMLElement>('.lightbox-trigger');
+    if (!trigger) return;
+    e.preventDefault();
+    open(trigger);
+});
+
+closeBtn.addEventListener('click', close);
+prevBtn.addEventListener('click', () => step(-1));
+nextBtn.addEventListener('click', () => step(1));
+lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) close();
+});
+readMoreBtn.addEventListener('click', () => {
+    const expanded = descEl.classList.toggle('expanded');
+    readMoreBtn.textContent = expanded ? '收起' : '查看更多';
+});
+
+document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('active')) return;
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowLeft') step(-1);
+    else if (e.key === 'ArrowRight') step(1);
+    else if (e.key === 'Tab') {
+        // 焦點限制在檢視器內
+        const focusable = Array.from(
+            lightbox.querySelectorAll<HTMLElement>('button:not([hidden]), a[href]'),
+        ).filter((el) => el.offsetParent !== null || getComputedStyle(el).position === 'fixed');
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    }
+});
+
+// 分享連結：?img=<原始路徑或圖片網址>
+const imgParam = new URLSearchParams(location.search).get('img');
+if (imgParam) {
+    const match = Array.from(document.querySelectorAll<HTMLElement>('.lightbox-trigger')).find(
+        (t) => t.dataset.original === imgParam || t.dataset.imgSrc === imgParam,
+    );
+    if (match) open(match);
+}
 </script>

@@ -1,0 +1,35 @@
+---
+import { SITE_DATA } from "../data/siteData";
+
+interface Props {
+    /** icons：圓形圖示列；list：圖示＋平台名稱的清單 */
+    variant?: "icons" | "list";
+}
+
+const { variant = "icons" } = Astro.props;
+const { socialLinks } = SITE_DATA;
+---
+
+<ul class:list={["social-links", `social-links--${variant}`]}>
+    {
+        socialLinks.map((link) => (
+            <li>
+                <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class={link.brand}
+                    aria-label={variant === "icons" ? link.name : undefined}
+                >
+                    <span class="social-icon"><i class={link.iconClass} aria-hidden="true" /></span>
+                    {variant === "list" && (
+                        <>
+                            <span class="social-name">{link.name}</span>
+                            <span class="material-symbols-outlined social-arrow" aria-hidden="true">arrow_forward</span>
+                        </>
+                    )}
+                </a>
+            </li>
+        ))
+    }
+</ul>

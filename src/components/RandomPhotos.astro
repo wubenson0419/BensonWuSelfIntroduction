@@ -1,0 +1,71 @@
+---
+// 首頁照片（3 欄網格）：先輸出前 6 張（沒有 JS 時的內容），載入後從全部照片中隨機挑 6 張替換
+import GalleryItem from "./GalleryItem.astro";
+import { PHOTOS, photoUrls } from "../utils/gallery";
+
+const COUNT = 6;
+const pool = await Promise.all(
+    PHOTOS.map(async (p) => ({
+        ...(await photoUrls(p)),
+        src: p.src,
+        title: p.title,
+        desc: p.desc,
+        meta: p.albumLabel,
+        label: p.title || p.albumLabel,
+    })),
+);
+---
+
+<div class="photo-grid" data-random-photos>
+    {PHOTOS.slice(0, COUNT).map((photo) => <GalleryItem photo={photo} />)}
+</div>
+<script type="application/json" id="photo-pool" set:html={JSON.stringify(pool)} />
+
+<script>
+    interface PoolItem {
+        thumb: string;
+        srcset: string;
+        large: string;
+        width: number;
+        height: number;
+        src: string;
+        title: string;
+        desc: string;
+        meta: string;
+        label: string;
+    }
+
+    const grid = document.querySelector<HTMLElement>("[data-random-photos]");
+    const raw = document.getElementById("photo-pool")?.textContent;
+
+    if (grid && raw) {
+        const pool: PoolItem[] = JSON.parse(raw);
+        // Fisher–Yates 洗牌後取前幾張
+        for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        grid.querySelectorAll<HTMLAnchorElement>(".gallery-item").forEach((a, i) => {
+            const p = pool[i];
+            if (!p) return;
+            a.href = p.large;
+            Object.assign(a.dataset, {
+                imgSrc: p.large,
+                original: p.src,
+                title: p.title,
+                description: p.desc,
+                meta: p.meta,
+                label: p.label,
+            });
+            a.setAttribute("aria-label", `查看照片：${p.label}`);
+            const img = a.querySelector("img");
+            if (img) {
+                img.srcset = p.srcset;
+                img.src = p.thumb;
+                img.alt = p.label;
+                img.width = p.width;
+                img.height = p.height;
+            }
+        });
+    }
+</script>
